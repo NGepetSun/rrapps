@@ -688,7 +688,7 @@
   .roster-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);margin-bottom:6px;flex-wrap:wrap;}
   .roster-row:hover{background:rgba(255,255,255,0.06);}
   .roster-name{font-weight:600;color:#fff;font-size:13px;flex:1;min-width:130px;}
-  .roster-setor-summary{font-family:var(--mono);font-size:10px;color:var(--success);margin-left:8px;background:rgba(74,216,168,0.1);border:1px solid rgba(74,216,168,0.25);padding:2px 8px;border-radius:20px;white-space:nowrap;}
+  .roster-setor-summary{font-size:12px;margin-left:8px;background:rgba(74,216,168,0.1);border:1px solid rgba(74,216,168,0.25);padding:2px 7px;border-radius:20px;white-space:nowrap;cursor:default;}
   .roster-setor-link{font-family:var(--mono);font-size:10px;color:var(--accent-blue);cursor:pointer;margin-left:8px;text-decoration:underline;}
   .roster-actions{display:flex;gap:6px;align-items:center;}
   .icon-btn{width:26px;height:26px;border-radius:7px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;padding:0;}
@@ -3116,11 +3116,14 @@ function renderMemberRoster() {
       const statusOk = (u.status || 'aktif') === 'aktif';
       const uname = u.username.replace(/'/g, "\\'");
       const setorSummary = weekly
+        ? weeklyList.map(s => s.itemIcon || '📦').join(' ')
+        : '';
+      const setorTitle = weekly
         ? weeklyList.map(s => `${s.itemIcon || '📦'} ${s.itemName} x${s.qty}`).join(', ')
         : '';
       return `<div class="roster-row">
         <span class="dot ${statusOk ? 'dot-green' : 'dot-red'}"></span>
-        <span class="roster-name">${u.username}${setorSummary ? `<span class="roster-setor-summary" title="${setorSummary.replace(/"/g, '&quot;')}">${setorSummary}</span>` : ''}<span class="roster-setor-link" onclick="openSetorModal('${uname}')">+ Setor</span></span>
+        <span class="roster-name">${u.username}${setorSummary ? `<span class="roster-setor-summary" title="${setorTitle.replace(/"/g, '&quot;')}">${setorSummary}</span>` : ''}<span class="roster-setor-link" onclick="openSetorModal('${uname}')">+ Setor</span></span>
         <span class="badge ${weekly ? 'badge-success' : 'badge-danger'}">${weekly ? '✓ WEEKLY' : '✗ WEEKLY'}</span>
         <span class="badge ${statusOk ? 'badge-success' : 'badge-warning'}">${statusOk ? 'AKTIF' : 'REHAT'}</span>
         <span class="roster-actions admin-only">
