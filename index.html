@@ -797,10 +797,24 @@
     .dash-main{max-height:none;}
   }
 </style>
+  #loadingOverlay{position:fixed;inset:0;background:#0b0d14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:9999;}
+  #loadingOverlay .ld-spinner{width:42px;height:42px;border-radius:50%;border:3px solid rgba(255,255,255,0.15);border-top-color:#7b6ee0;animation:ld-spin 0.8s linear infinite;}
+  #loadingOverlay .ld-text{color:#9aa0b8;font-size:13px;letter-spacing:0.4px;}
+  @keyframes ld-spin{to{transform:rotate(360deg);}}
 </head>
 <body>
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<!-- ================= LOADING OVERLAY ================= -->
+<div id="loadingOverlay">
+  <div class="ld-spinner"></div>
+  <div class="ld-text">Menyambungkan ke server...</div>
+</div>
+
 <!-- ================= LOGIN PAGE ================= -->
-<div id="loginPage">
+<div id="loginPage" class="hidden">
   <div class="login-shell">
     <div class="login-topbar">
       <div class="ltb-brand"><span class="ltb-dot"></span> Radiant Rebellion Network</div>
@@ -1696,6 +1710,28 @@
 
 <script>
 // ════════════════════════════════════
+//  FIREBASE
+// ════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyCtnyQHHjFbqSoJeilvcdbRjhxfzrN9pkM",
+  authDomain: "rapps-15ccc.firebaseapp.com",
+  projectId: "rapps-15ccc",
+  storageBucket: "rapps-15ccc.firebasestorage.app",
+  messagingSenderId: "1062924109143",
+  appId: "1:1062924109143:web:c7288761abf68f9069ea12",
+  measurementId: "G-P2B2RBHFJP"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Docs: users & products get their own doc (they hold base64 photos/images,
+// kept isolated so one doc doesn't bloat past Firestore's 1MB doc limit).
+// Everything else (small, no images) lives together in one "panel" doc.
+const usersDocRef = db.collection('java_panel').doc('users');
+const productsDocRef = db.collection('java_panel').doc('products');
+const panelDocRef = db.collection('java_panel').doc('panel');
+
+// ════════════════════════════════════
 //  STATE
 // ════════════════════════════════════
 let state = {
@@ -1709,17 +1745,12 @@ let state = {
   chartRange: 'weekly',
 };
 
-function loadLS(key, fallback){
-  try{ const v = JSON.parse(localStorage.getItem(key) || 'null'); return v === null ? fallback : v; }
-  catch(e){ return fallback; }
-}
-
-let users = loadLS('java_users', [
+const DEFAULT_USERS = [
   { id: 1, username: 'admin', password: 'admin123', role: 'admin', active: true, photo: '' },
   { id: 2, username: 'operator', password: 'op123', role: 'member', active: true, photo: '' },
-]);
+];
 
-let products = loadLS('java_products', [
+const DEFAULT_PRODUCTS = [
   { id: 1, name: 'AK-47', type: 'illegal', cat: 'weapon', buy: 8000, sell: 15000, stock: 12, icon: '🔫', img: '', desc: 'Assault rifle kelas berat' },
   { id: 2, name: 'Pistol 9mm', type: 'illegal', cat: 'weapon', buy: 2500, sell: 5000, stock: 25, icon: '🔫', img: '', desc: 'Sidearm handgun standar' },
   { id: 3, name: 'Shotgun Pump', type: 'illegal', cat: 'weapon', buy: 6000, sell: 12000, stock: 8, icon: '🔫', img: '', desc: 'Close-range devastation' },
@@ -1737,11 +1768,33 @@ let products = loadLS('java_products', [
   { id: 15, name: 'Soda Cola', type: 'biz', cat: 'minuman', buy: 12, sell: 30, stock: 70, icon: '🥤', img: '', desc: 'Kaleng 330ml' },
   { id: 16, name: 'Sparepart Motor', type: 'biz', cat: 'lainnya', buy: 300, sell: 650, stock: 25, icon: '🔧', img: '', desc: 'Onderdil umum' },
   { id: 17, name: 'Rokok', type: 'biz', cat: 'lainnya', buy: 25, sell: 55, stock: 100, icon: '🚬', img: '', desc: 'Per bungkus' },
-]);
+];
 
-let orders = loadLS('java_orders', []);
-let nextProductId = Math.max(0, ...products.map(p => p.id)) + 1;
-let nextOrderId = orders.length ? Math.max(...orders.map(o => o.id), 0) + 1 : 1;
+const DEFAULT_SETOR_ITEMS = [
+  { id: 1, name: 'Uang Tunai', icon: '💵' },
+  { id: 2, name: 'Cocaine', icon: '💎' },
+  { id: 3, name: 'Weed', icon: '🌿' },
+  { id: 4, name: 'Meth', icon: '🔵' },
+];
+
+const DEFAULT_DATA_SHEETS = [
+  { id: 1, name: 'Sheet1', cols: ['Kolom A', 'Kolom B', 'Kolom C'], rows: [['', '', ''], ['', '', '']] },
+];
+
+let users = [];
+let products = [];
+let orders = [];
+let setorItems = [];
+let setoran = [];
+let dataSheets = [];
+let activityLog = [];
+
+let nextProductId = 1;
+let nextOrderId = 1;
+let nextSetorItemId = 1;
+let nextSetorId = 1;
+let nextDataSheetId = 1;
+let nextLogId = 1;
 
 // ── JABATAN (roster groups, sama seperti struktur BFL yang sudah ada) ──
 const JABATAN_LIST = [
@@ -1754,50 +1807,120 @@ const JABATAN_LIST = [
 ];
 const jabatanMeta = key => JABATAN_LIST.find(j => j.key === key) || JABATAN_LIST[JABATAN_LIST.length - 1];
 
-// migrasi: pastikan semua member punya jabatan & status
-users.forEach(u => {
-  if (u.role === 'member') {
-    if (!u.jabatan) u.jabatan = 'MEMBER';
-    if (!u.status) u.status = 'aktif';
-  }
-});
+function migrateUsers() {
+  // pastikan semua member punya jabatan & status
+  users.forEach(u => {
+    if (u.role === 'member') {
+      if (!u.jabatan) u.jabatan = 'MEMBER';
+      if (!u.status) u.status = 'aktif';
+    }
+  });
+}
 
-// ── SETORAN ──
-let setorItems = loadLS('java_setor_items', [
-  { id: 1, name: 'Uang Tunai', icon: '💵' },
-  { id: 2, name: 'Cocaine', icon: '💎' },
-  { id: 3, name: 'Weed', icon: '🌿' },
-  { id: 4, name: 'Meth', icon: '🔵' },
-]);
-let nextSetorItemId = setorItems.length ? Math.max(...setorItems.map(x => x.id)) + 1 : 1;
-
-let setoran = loadLS('java_setoran', []);
-let nextSetorId = setoran.length ? Math.max(...setoran.map(x => x.id), 0) + 1 : 1;
+function recomputeCounters() {
+  nextProductId = products.length ? Math.max(0, ...products.map(p => p.id)) + 1 : 1;
+  nextOrderId = orders.length ? Math.max(...orders.map(o => o.id), 0) + 1 : 1;
+  nextSetorItemId = setorItems.length ? Math.max(...setorItems.map(x => x.id)) + 1 : 1;
+  nextSetorId = setoran.length ? Math.max(...setoran.map(x => x.id), 0) + 1 : 1;
+  nextDataSheetId = dataSheets.length ? Math.max(...dataSheets.map(s => s.id), 0) + 1 : 1;
+  nextLogId = activityLog.length ? Math.max(...activityLog.map(x => x.id), 0) + 1 : 1;
+}
 
 state.memberTab = 'member';
 state.memberSearch = '';
 state.memberJabatanFilter = 'all';
 state.memberStatusFilter = 'all';
 
-// ── DATA (excel-like notes, semua role bisa lihat & edit) ──
-let dataSheets = loadLS('java_data_sheets', [
-  { id: 1, name: 'Sheet1', cols: ['Kolom A', 'Kolom B', 'Kolom C'], rows: [['', '', ''], ['', '', '']] },
-]);
-let nextDataSheetId = dataSheets.length ? Math.max(...dataSheets.map(s => s.id), 0) + 1 : 1;
-state.dataActiveSheetId = dataSheets[0] ? dataSheets[0].id : null;
+// ════════════════════════════════════
+//  FIRESTORE SYNC
+// ════════════════════════════════════
+let firebaseReady = false;
 
-// ── ACTIVITY LOG ──
-let activityLog = loadLS('java_activity_log', []);
-let nextLogId = activityLog.length ? Math.max(...activityLog.map(x => x.id), 0) + 1 : 1;
+function showFirebaseError(err) {
+  console.error('Firestore error:', err);
+  const el = document.getElementById('loadingOverlay');
+  if (el) {
+    el.querySelector('.ld-text').textContent = 'Gagal konek ke server. Cek koneksi internet / config Firebase, lalu refresh halaman.';
+    el.querySelector('.ld-spinner').style.display = 'none';
+    el.classList.remove('hidden');
+  }
+}
+
+async function initFirebaseData() {
+  try {
+    const [uSnap, pSnap, panelSnap] = await Promise.all([
+      usersDocRef.get(), productsDocRef.get(), panelDocRef.get()
+    ]);
+
+    users = uSnap.exists ? (uSnap.data().list || []) : DEFAULT_USERS.slice();
+    if (!uSnap.exists) await usersDocRef.set({ list: users });
+
+    products = pSnap.exists ? (pSnap.data().list || []) : DEFAULT_PRODUCTS.slice();
+    if (!pSnap.exists) await productsDocRef.set({ list: products });
+
+    if (panelSnap.exists) {
+      const d = panelSnap.data();
+      orders = d.orders || [];
+      setorItems = d.setorItems || DEFAULT_SETOR_ITEMS.slice();
+      setoran = d.setoran || [];
+      dataSheets = d.dataSheets || DEFAULT_DATA_SHEETS.slice();
+      activityLog = d.activityLog || [];
+    } else {
+      orders = [];
+      setorItems = DEFAULT_SETOR_ITEMS.slice();
+      setoran = [];
+      dataSheets = DEFAULT_DATA_SHEETS.slice();
+      activityLog = [];
+      await panelDocRef.set({ orders, setorItems, setoran, dataSheets, activityLog });
+    }
+
+    migrateUsers();
+    recomputeCounters();
+    state.dataActiveSheetId = dataSheets[0] ? dataSheets[0].id : null;
+
+    firebaseReady = true;
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    document.getElementById('loginPage').classList.remove('hidden');
+
+    // Real-time listeners: kalau user lain mengubah data, semua sesi lain update otomatis
+    usersDocRef.onSnapshot(snap => {
+      if (!snap.exists) return;
+      users = snap.data().list || [];
+      migrateUsers();
+      if (state.currentUser) {
+        const me = users.find(x => x.id === state.currentUser.id);
+        if (me) state.currentUser = me;
+      }
+      renderAll();
+    }, showFirebaseError);
+
+    productsDocRef.onSnapshot(snap => {
+      if (!snap.exists) return;
+      products = snap.data().list || [];
+      renderAll();
+    }, showFirebaseError);
+
+    panelDocRef.onSnapshot(snap => {
+      if (!snap.exists) return;
+      const d = snap.data();
+      orders = d.orders || [];
+      setorItems = d.setorItems || setorItems;
+      setoran = d.setoran || [];
+      dataSheets = d.dataSheets || dataSheets;
+      activityLog = d.activityLog || [];
+      renderAll();
+    }, showFirebaseError);
+
+  } catch (err) {
+    showFirebaseError(err);
+  }
+}
 
 function save() {
-  localStorage.setItem('java_products', JSON.stringify(products));
-  localStorage.setItem('java_orders', JSON.stringify(orders));
-  localStorage.setItem('java_users', JSON.stringify(users));
-  localStorage.setItem('java_setor_items', JSON.stringify(setorItems));
-  localStorage.setItem('java_setoran', JSON.stringify(setoran));
-  localStorage.setItem('java_data_sheets', JSON.stringify(dataSheets));
-  localStorage.setItem('java_activity_log', JSON.stringify(activityLog));
+  if (!firebaseReady) return;
+  usersDocRef.set({ list: users }).catch(showFirebaseError);
+  productsDocRef.set({ list: products }).catch(showFirebaseError);
+  panelDocRef.set({ orders, setorItems, setoran, dataSheets, activityLog }).catch(showFirebaseError);
 }
 
 function logActivity(action, detail) {
@@ -1810,8 +1933,10 @@ function logActivity(action, detail) {
     detail: detail || '',
   });
   if (activityLog.length > 500) activityLog = activityLog.slice(-500);
-  localStorage.setItem('java_activity_log', JSON.stringify(activityLog));
+  save();
 }
+
+initFirebaseData();
 
 function renderLogPage() {
   const tb = document.getElementById('log-tbody');
@@ -2151,7 +2276,7 @@ function updateProfileUI() {
 function handleProfilePhotoUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 3 * 1024 * 1024) { showToast('Ukuran foto max 3MB!', 'error'); return; }
+  if (file.size > 300 * 1024) { showToast('Ukuran foto max 300KB (biar muat di database bersama)!', 'error'); return; }
   const reader = new FileReader();
   reader.onload = e => {
     const dataUrl = e.target.result;
@@ -2703,7 +2828,7 @@ function openEditProduct(pid) {
 function handleImgUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 3 * 1024 * 1024) { showToast('Ukuran gambar max 3MB!', 'error'); return; }
+  if (file.size > 300 * 1024) { showToast('Ukuran gambar max 300KB (biar muat di database bersama)!', 'error'); return; }
   const reader = new FileReader();
   reader.onload = e => {
     document.getElementById('p-img-data').value = e.target.result;
@@ -2763,7 +2888,7 @@ function openImgChange(pid) {
 function handleImgchangeUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 3 * 1024 * 1024) { showToast('Ukuran gambar max 3MB!', 'error'); return; }
+  if (file.size > 300 * 1024) { showToast('Ukuran gambar max 300KB (biar muat di database bersama)!', 'error'); return; }
   const reader = new FileReader();
   reader.onload = e => {
     document.getElementById('imgchange-data').value = e.target.result;
