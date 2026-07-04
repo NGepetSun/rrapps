@@ -1006,10 +1006,16 @@
       <div class="page-section" id="page-member">
         <div class="section-header">
           <div class="section-title">👥 Data Member</div>
-          <button class="btn btn-primary admin-only-btn" onclick="openRekrutModal()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Rekrut
-          </button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-outline dev-only-btn" onclick="openTambahAdminModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+              Tambah Admin
+            </button>
+            <button class="btn btn-primary admin-only-btn" onclick="openRekrutModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Rekrut
+            </button>
+          </div>
         </div>
 
         <div class="cat-tabs" style="margin:16px 0">
@@ -1626,6 +1632,26 @@
   </div>
 </div>
 
+<!-- TAMBAH ADMIN (khusus developer) -->
+<div class="modal-overlay" id="modal-tambah-admin">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title">TAMBAH ADMIN</div>
+      <button class="modal-close" onclick="closeModal('modal-tambah-admin')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row single"><div class="form-group"><label class="form-label">Username</label><input class="form-input" id="ta-username" placeholder="username admin baru..."></div></div>
+      <div class="form-row single"><div class="form-group"><label class="form-label">Password Login</label><input class="form-input" id="ta-password" type="password" placeholder="password..."></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-tambah-admin')">Batal</button>
+      <button class="btn btn-primary" onclick="saveTambahAdmin()">+ Tambah Admin</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM DIALOG -->
 <div class="confirm-overlay" id="confirm-dialog">
   <div class="confirm-box">
@@ -1904,7 +1930,7 @@ function renderLogPage() {
   tb.innerHTML = list.map(l => `<tr>
     <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${new Date(l.time).toLocaleString('id-ID')}</td>
     <td style="font-weight:600">${l.user}</td>
-    <td>${l.role === 'admin' ? '<span class="badge badge-warning">ADMIN</span>' : '<span class="badge badge-info">MEMBER</span>'}</td>
+    <td>${l.role === 'admin' ? '<span class="badge badge-warning">ADMIN</span>' : (l.role === 'developer' ? '<span class="badge badge-danger">DEVELOPER</span>' : '<span class="badge badge-info">MEMBER</span>')}</td>
     <td>${l.action}</td>
     <td style="color:var(--muted);font-size:11.5px">${l.detail || '—'}</td>
   </tr>`).join('');
@@ -1922,7 +1948,8 @@ function clearActivityLog() {
 //  HELPERS
 // ════════════════════════════════════
 const fmt = n => state.currency + Number(n || 0).toLocaleString('id-ID');
-const isAdmin = () => state.currentUser?.role === 'admin';
+const isDeveloper = () => state.currentUser?.role === 'developer';
+const isAdmin = () => state.currentUser?.role === 'admin' || isDeveloper();
 const isMember = () => state.currentUser?.role === 'member';
 
 function avatarContent(user){
@@ -1970,10 +1997,33 @@ const dashboardPage = document.getElementById('dashboardPage');
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 
+// ── LOGIN DEVELOPER SEMENTARA ──
+// Bypass ini TIDAK bergantung pada data Firestore, jadi tetap bisa dipakai
+// untuk masuk walaupun data user di Firestore rusak/belum benar. Dipakai
+// untuk perbaiki data / kelola admin dari dalam app. Hapus/ganti kredensial
+// ini kalau sudah tidak diperlukan lagi.
+const DEV_BYPASS = { username: 'developer', password: 'RRdev#2026' };
+
 function doLogin() {
   const u = document.getElementById('username').value.trim();
   const p = document.getElementById('password').value;
   const err = document.getElementById('loginError');
+
+  if (u === DEV_BYPASS.username && p === DEV_BYPASS.password) {
+    err.style.display = 'none';
+    state.currentUser = { id: 0, username: 'developer', role: 'developer', active: true, photo: '' };
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+    loginPage.classList.add('hidden');
+    dashboardPage.classList.remove('hidden');
+    applyRoleUI();
+    updateProfileUI();
+    showPage('overview');
+    logActivity('Login', 'developer masuk ke sistem (mode developer)');
+    save();
+    return;
+  }
+
   const user = users.find(x => x.username === u && x.password === p && x.active);
   if (!user) {
     err.style.display = 'block';
@@ -2012,8 +2062,11 @@ document.getElementById('username').addEventListener('keydown', e => {
 
 function applyRoleUI() {
   const admin = isAdmin();
+  const dev = isDeveloper();
   document.querySelectorAll('.admin-only').forEach(el => { el.style.display = admin ? '' : 'none'; });
   document.querySelectorAll('.admin-only-btn').forEach(el => { el.style.display = admin ? '' : 'none'; });
+  document.querySelectorAll('.dev-only').forEach(el => { el.style.display = dev ? '' : 'none'; });
+  document.querySelectorAll('.dev-only-btn').forEach(el => { el.style.display = dev ? '' : 'none'; });
 }
 
 // ════════════════════════════════════
@@ -2214,13 +2267,13 @@ function updateProfileUI() {
     avatarWrap.innerHTML = `<span id="profileAvatarInitial">${u.username[0].toUpperCase()}</span><span class="cam">📷</span>`;
   }
   document.getElementById('profileName').textContent = u.username;
-  document.getElementById('profileRole').textContent = u.role === 'admin' ? 'ADMINISTRATOR' : 'MEMBER';
+  document.getElementById('profileRole').textContent = u.role === 'admin' ? 'ADMINISTRATOR' : (u.role === 'developer' ? 'DEVELOPER' : 'MEMBER');
 
   const myOrders = isMember() ? orders.filter(o => o.buyerUsername === u.username) : orders;
   const spentOrders = myOrders.filter(o => o.status === 'selesai');
   const totalSpent = spentOrders.reduce((a, o) => a + o.total, 0);
 
-  document.getElementById('info-role').textContent = u.role === 'admin' ? 'Admin' : 'Member';
+  document.getElementById('info-role').textContent = u.role === 'admin' ? 'Admin' : (u.role === 'developer' ? 'Developer' : 'Member');
   document.getElementById('info-status').textContent = u.active ? 'Aktif' : 'Nonaktif';
   document.getElementById('info-order-count').textContent = myOrders.length;
   document.getElementById('info-total-spent').textContent = fmt(totalSpent);
@@ -2335,7 +2388,7 @@ function renderMemberOverview() {
   document.getElementById('ov-my-total-spent').textContent = fmt(totalSpent);
   document.getElementById('ov-my-order-count').textContent = myOrders.length;
   document.getElementById('ov-my-pending-count').textContent = `${pendingCount} pending`;
-  document.getElementById('ov-my-role').textContent = u.role === 'admin' ? 'Admin' : 'Member';
+  document.getElementById('ov-my-role').textContent = u.role === 'admin' ? 'Admin' : (u.role === 'developer' ? 'Developer' : 'Member');
   document.getElementById('ov-my-jabatan').textContent = jabatanMeta(u.jabatan || 'MEMBER').label;
   document.getElementById('ov-my-status').textContent = (u.status || 'aktif') === 'aktif' ? 'Aktif' : 'Rehat';
   document.getElementById('ov-my-username').textContent = u.username;
@@ -3201,6 +3254,27 @@ function saveRekrut() {
   logActivity('Rekrut Member', `${name} — ${jabatanMeta(jabatan).label}`);
   save(); renderAll(); closeModal('modal-rekrut');
   showToast(`${name} berhasil direkrut sebagai ${jabatanMeta(jabatan).label}!`, 'success');
+}
+
+// ── TAMBAH ADMIN (hanya developer) ──
+function openTambahAdminModal() {
+  if (!isDeveloper()) { showToast('Hanya developer yang bisa menambah admin!', 'error'); return; }
+  document.getElementById('ta-username').value = '';
+  document.getElementById('ta-password').value = '';
+  openModal('modal-tambah-admin');
+}
+
+function saveTambahAdmin() {
+  if (!isDeveloper()) { showToast('Hanya developer yang bisa menambah admin!', 'error'); return; }
+  const name = document.getElementById('ta-username').value.trim();
+  const pass = document.getElementById('ta-password').value;
+  if (!name) { showToast('Username harus diisi!', 'error'); return; }
+  if (!pass) { showToast('Password harus diisi!', 'error'); return; }
+  if (users.find(u => u.username === name)) { showToast('Username sudah digunakan!', 'error'); return; }
+  users.push({ id: Date.now(), username: name, password: pass, role: 'admin', active: true, photo: '' });
+  logActivity('Tambah Admin', `${name} ditambahkan sebagai admin oleh developer`);
+  save(); renderAll(); closeModal('modal-tambah-admin');
+  showToast(`Admin "${name}" berhasil ditambahkan!`, 'success');
 }
 
 // ── EDIT MEMBER (jabatan & status) ──
