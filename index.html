@@ -1840,11 +1840,24 @@ function showFirebaseError(err) {
   console.error('Firestore error:', err);
   const el = document.getElementById('loadingOverlay');
   if (el) {
-    el.querySelector('.ld-text').textContent = 'Gagal konek ke server. Cek koneksi internet / config Firebase, lalu refresh halaman.';
+    const code = err && err.code ? err.code : '(no code)';
+    const msg = err && err.message ? err.message : String(err);
+    el.querySelector('.ld-text').innerHTML =
+      'Gagal konek ke server.<br><br>' +
+      '<b>Kode:</b> ' + code + '<br>' +
+      '<b>Pesan:</b> ' + msg + '<br><br>' +
+      'Screenshot teks ini dan kirim ke developer.';
+    el.querySelector('.ld-text').style.textAlign = 'center';
+    el.querySelector('.ld-text').style.padding = '0 24px';
+    el.querySelector('.ld-text').style.maxWidth = '90vw';
     el.querySelector('.ld-spinner').style.display = 'none';
     el.classList.remove('hidden');
   }
 }
+
+window.addEventListener('error', e => {
+  showFirebaseError({ code: 'window.onerror', message: (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || '') });
+});
 
 async function initFirebaseData() {
   try {
