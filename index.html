@@ -1817,6 +1817,16 @@ function migrateUsers() {
   });
 }
 
+// Firestore tidak mendukung array-di-dalam-array secara langsung.
+// dataSheets.rows adalah array of arrays, jadi kita bungkus tiap row jadi
+// object { c: [...] } saat simpan, dan buka lagi saat baca.
+function serializeDataSheets(sheets) {
+  return (sheets || []).map(s => ({ ...s, rows: (s.rows || []).map(r => ({ c: r })) }));
+}
+function deserializeDataSheets(sheets) {
+  return (sheets || []).map(s => ({ ...s, rows: (s.rows || []).map(r => (r && Array.isArray(r.c)) ? r.c : r) }));
+}
+
 function recomputeCounters() {
   nextProductId = products.length ? Math.max(0, ...products.map(p => p.id)) + 1 : 1;
   nextOrderId = orders.length ? Math.max(...orders.map(o => o.id), 0) + 1 : 1;
@@ -1876,7 +1886,7 @@ async function initFirebaseData() {
       orders = d.orders || [];
       setorItems = d.setorItems || DEFAULT_SETOR_ITEMS.slice();
       setoran = d.setoran || [];
-      dataSheets = d.dataSheets || DEFAULT_DATA_SHEETS.slice();
+      dataSheets = d.dataSheets ? deserializeDataSheets(d.dataSheets) : DEFAULT_DATA_SHEETS.slice();
       activityLog = d.activityLog || [];
     } else {
       orders = [];
@@ -1884,7 +1894,7 @@ async function initFirebaseData() {
       setoran = [];
       dataSheets = DEFAULT_DATA_SHEETS.slice();
       activityLog = [];
-      await panelDocRef.set({ orders, setorItems, setoran, dataSheets, activityLog });
+      await panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog });
     }
 
     migrateUsers();
@@ -1919,7 +1929,7 @@ async function initFirebaseData() {
       orders = d.orders || [];
       setorItems = d.setorItems || setorItems;
       setoran = d.setoran || [];
-      dataSheets = d.dataSheets || dataSheets;
+      dataSheets = d.dataSheets ? deserializeDataSheets(d.dataSheets) : dataSheets;
       activityLog = d.activityLog || [];
       renderAll();
     }, showFirebaseError);
@@ -1933,7 +1943,7 @@ function save() {
   if (!firebaseReady) return;
   usersDocRef.set({ list: users }).catch(showFirebaseError);
   productsDocRef.set({ list: products }).catch(showFirebaseError);
-  panelDocRef.set({ orders, setorItems, setoran, dataSheets, activityLog }).catch(showFirebaseError);
+  panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog }).catch(showFirebaseError);
 }
 
 function logActivity(action, detail) {
