@@ -1015,7 +1015,6 @@
         <div class="cat-tabs" style="margin:16px 0">
           <div class="cat-tab active" id="mtab-member" onclick="switchMemberTab('member')">👥 Member</div>
           <div class="cat-tab" id="mtab-setoran" onclick="switchMemberTab('setoran')">💰 Setoran</div>
-          <div class="cat-tab admin-only" id="mtab-akun" onclick="switchMemberTab('akun')">🔐 Akun & Config</div>
         </div>
 
         <!-- MEMBER TAB -->
@@ -1055,43 +1054,6 @@
               <thead><tr><th>Member</th><th>Barang</th><th>Jumlah</th><th>Catatan</th><th>Waktu</th><th>Aksi</th></tr></thead>
               <tbody id="setoran-tbody"></tbody>
             </table>
-          </div>
-        </div>
-
-        <!-- AKUN & CONFIG TAB (ADMIN ONLY) -->
-        <div id="member-tab-akun" class="hidden admin-only">
-          <div class="table-wrap">
-            <div class="table-top"><span class="table-title">👥 Data Members</span></div>
-            <table>
-              <thead><tr><th>Username</th><th>Role</th><th>Total Order</th><th>Total Belanja</th><th>Status</th><th>Aksi</th></tr></thead>
-              <tbody id="members-tbody"></tbody>
-            </table>
-          </div>
-
-          <div class="table-wrap">
-            <div class="table-top">
-              <span class="table-title">🔐 Akun Pengguna</span>
-              <button class="btn btn-primary btn-sm" onclick="openAddUserModal()">+ Tambah User</button>
-            </div>
-            <table>
-              <thead><tr><th>Username</th><th>Role</th><th>Status</th><th>Aksi</th></tr></thead>
-              <tbody id="users-tbody"></tbody>
-            </table>
-          </div>
-
-          <div class="table-wrap">
-            <div class="table-top"><span class="table-title">⚙️ Konfigurasi Bisnis</span></div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Nama Bisnis</label>
-                <input class="form-input" id="cfg-bizname" value="JAVA CORP">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Mata Uang</label>
-                <input class="form-input" id="cfg-currency" value="$">
-              </div>
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="saveCfg()">Simpan Konfigurasi</button>
           </div>
         </div>
       </div>
@@ -1483,35 +1445,6 @@
   </div>
 </div>
 
-<!-- ADD USER -->
-<div class="modal-overlay" id="modal-user">
-  <div class="modal" style="max-width:400px">
-    <div class="modal-header">
-      <div class="modal-title">TAMBAH USER</div>
-      <button class="modal-close" onclick="closeModal('modal-user')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row single"><div class="form-group"><label class="form-label">Username</label><input class="form-input" id="u-name" placeholder="username..."></div></div>
-      <div class="form-row single"><div class="form-group"><label class="form-label">Password</label><input class="form-input" id="u-pass" type="password" placeholder="password..."></div></div>
-      <div class="form-row single">
-        <div class="form-group">
-          <label class="form-label">Role</label>
-          <select class="form-select" id="u-role">
-            <option value="admin">Admin</option>
-            <option value="member">Member</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-user')">Batal</button>
-      <button class="btn btn-primary" onclick="saveUser()">Tambah User</button>
-    </div>
-  </div>
-</div>
-
 <!-- MEMBER ORDER (self-order) -->
 <div class="modal-overlay" id="modal-member-order">
   <div class="modal">
@@ -1746,8 +1679,7 @@ let state = {
 };
 
 const DEFAULT_USERS = [
-  { id: 1, username: 'admin', password: 'admin123', role: 'admin', active: true, photo: '' },
-  { id: 2, username: 'operator', password: 'op123', role: 'member', active: true, photo: '' },
+  { id: 1, username: 'developer', password: 'dev12345', role: 'admin', active: true, photo: '' },
 ];
 
 const DEFAULT_PRODUCTS = [
@@ -2259,8 +2191,6 @@ function renderAll() {
   renderCatalog('weapon', 'weapons-grid');
   renderCatalog('drug', 'drugs-grid');
   renderCatalog('ammo', 'ammo-grid');
-  renderUsersTable();
-  renderMembersTable();
   renderMemberRoster();
   renderSetoranTab();
   populateOrderProductSelect();
@@ -2310,7 +2240,7 @@ function handleProfilePhotoUpload(input) {
     }
     save();
     updateProfileUI();
-    renderOrderTable(); renderMembersTable();
+    renderOrderTable();
     showToast('Foto profil diperbarui!', 'success');
   };
   reader.readAsDataURL(file);
@@ -2723,48 +2653,6 @@ function buildInvSlot(p, admin) {
   </div>`;
 }
 
-// ════════════════════════════════════
-//  USERS / MEMBERS TABLES (settings)
-// ════════════════════════════════════
-function renderUsersTable() {
-  const tb = document.getElementById('users-tbody');
-  if (!tb) return;
-  tb.innerHTML = users.map(u => `<tr>
-    <td style="font-weight:600">${u.username}</td>
-    <td>${u.role === 'admin' ? '<span class="badge badge-warning">ADMIN</span>' : '<span class="badge badge-info">MEMBER</span>'}</td>
-    <td><span class="dot ${u.active ? 'dot-green' : 'dot-red'}"></span>${u.active ? 'Aktif' : 'Nonaktif'}</td>
-    <td>${isAdmin() && u.username !== state.currentUser?.username
-      ? `<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">Hapus</button>`
-      : '<span style="color:var(--muted);font-size:11px">—</span>'}
-    </td>
-  </tr>`).join('');
-}
-
-function renderMembersTable() {
-  const tb = document.getElementById('members-tbody');
-  if (!tb) return;
-  const members = users.filter(u => u.role === 'member');
-  if (!members.length) {
-    tb.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👥</div><p>BELUM ADA MEMBER</p></div></td></tr>`;
-    return;
-  }
-  tb.innerHTML = members.map(u => {
-    const myOrders = orders.filter(o => o.buyerUsername === u.username);
-    const totalSpent = myOrders.filter(o => o.status === 'selesai').reduce((a, o) => a + o.total, 0);
-    return `<tr>
-      <td>${memberTag(u.username, u.username)}</td>
-      <td><span class="badge badge-info">MEMBER</span></td>
-      <td style="font-family:var(--mono)">${myOrders.length}x</td>
-      <td style="font-family:var(--mono);color:var(--accent-blue)">${fmt(totalSpent)}</td>
-      <td><span class="dot ${u.active ? 'dot-green' : 'dot-red'}"></span>${u.active ? 'Aktif' : 'Nonaktif'}</td>
-      <td>${isAdmin() && u.username !== state.currentUser?.username
-        ? `<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">Hapus</button>`
-        : '—'}
-      </td>
-    </tr>`;
-  }).join('');
-}
-
 function populateOrderProductSelect() {
   const sel = document.getElementById('o-product');
   if (!sel) return;
@@ -3085,16 +2973,12 @@ function saveEditPrice() {
 //  MEMBER PAGE (roster by jabatan) & SETORAN
 // ════════════════════════════════════
 function switchMemberTab(tab) {
-  if (tab === 'akun' && !isAdmin()) return;
   state.memberTab = tab;
   document.getElementById('mtab-member').classList.toggle('active', tab === 'member');
   document.getElementById('mtab-setoran').classList.toggle('active', tab === 'setoran');
-  document.getElementById('mtab-akun').classList.toggle('active', tab === 'akun');
   document.getElementById('member-tab-member').classList.toggle('hidden', tab !== 'member');
   document.getElementById('member-tab-setoran').classList.toggle('hidden', tab !== 'setoran');
-  document.getElementById('member-tab-akun').classList.toggle('hidden', tab !== 'akun');
   if (tab === 'setoran') renderSetoranTab();
-  else if (tab === 'akun') { renderUsersTable(); renderMembersTable(); }
   else renderMemberRoster();
 }
 
@@ -3348,26 +3232,6 @@ function saveEditMember() {
 // ════════════════════════════════════
 //  USERS
 // ════════════════════════════════════
-function openAddUserModal() {
-  if (!isAdmin()) { showToast('Hanya admin yang bisa tambah user!', 'error'); return; }
-  document.getElementById('u-name').value = '';
-  document.getElementById('u-pass').value = '';
-  document.getElementById('u-role').value = 'member';
-  openModal('modal-user');
-}
-
-function saveUser() {
-  const name = document.getElementById('u-name').value.trim();
-  const pass = document.getElementById('u-pass').value;
-  const role = document.getElementById('u-role').value;
-  if (!name || !pass) { showToast('Username dan password harus diisi!', 'error'); return; }
-  if (users.find(u => u.username === name)) { showToast('Username sudah digunakan!', 'error'); return; }
-  users.push({ id: Date.now(), username: name, password: pass, role, active: true, photo: '' });
-  logActivity('Tambah User', `${name} — ${role}`);
-  save(); renderAll(); closeModal('modal-user');
-  showToast(`User "${name}" berhasil ditambahkan!`, 'success');
-}
-
 function deleteUser(uid) {
   if (!isAdmin()) return;
   const u = users.find(x => x.id === uid);
@@ -3380,15 +3244,6 @@ function deleteUser(uid) {
 // ════════════════════════════════════
 //  SETTINGS
 // ════════════════════════════════════
-function saveCfg() {
-  state.bizName = document.getElementById('cfg-bizname').value || 'JAVA CORP';
-  state.currency = document.getElementById('cfg-currency').value || '$';
-  logActivity('Update Konfigurasi', `Nama: ${state.bizName}, Mata Uang: ${state.currency}`);
-  save();
-  renderAll();
-  showToast('Konfigurasi disimpan!', 'success');
-}
-
 // ════════════════════════════════════
 //  DELETE
 // ════════════════════════════════════
