@@ -1331,7 +1331,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-product')">Batal</button>
-      <button class="btn btn-primary" onclick="saveProduct()">Simpan Produk</button>
+      <button class="btn btn-primary" id="p-save-btn" onclick="saveProduct()">Simpan Produk</button>
     </div>
   </div>
 </div>
@@ -1708,6 +1708,15 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
+// Aktifkan offline persistence: perubahan disimpan dulu ke IndexedDB lokal,
+// lalu dikirim ke server begitu ada koneksi — jadi kalau HP di-refresh
+// atau sinyal lambat, data yang baru ditambah tetap aman & terkirim otomatis.
+db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+  console.warn('Firestore persistence gagal aktif:', err.code);
+  // 'failed-precondition' = ada tab lain yang lebih dulu aktifkan (aman, diabaikan)
+  // 'unimplemented' = browser tidak support (misal mode incognito lama)
+});
+
 // Docs: users & products get their own doc (they hold base64 photos/images,
 // kept isolated so one doc doesn't bloat past Firestore's 1MB doc limit).
 // Everything else (small, no images) lives together in one "panel" doc.
@@ -1959,10 +1968,12 @@ function uploadImageToStorage(file, folder) {
 }
 
 function save() {
-  if (!firebaseReady) return;
-  usersDocRef.set({ list: users }).catch(showFirebaseError);
-  productsDocRef.set({ list: products }).catch(showFirebaseError);
-  panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories }).catch(showFirebaseError);
+  if (!firebaseReady) return Promise.resolve();
+  return Promise.all([
+    usersDocRef.set({ list: users }).catch(showFirebaseError),
+    productsDocRef.set({ list: products }).catch(showFirebaseError),
+    panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories }).catch(showFirebaseError),
+  ]);
 }
 
 function logActivity(action, detail) {
@@ -2878,7 +2889,7 @@ function previewImgUrl(url) {
   document.getElementById('p-img-preview').innerHTML = `<img src="${url}" onerror="this.parentElement.innerHTML='<span>❌</span>'">`;
 }
 
-function saveProduct() {
+async function saveProduct() {
   if (!isAdmin()) return;
   const id = document.getElementById('p-edit-id').value;
   const name = document.getElementById('p-name').value.trim();
@@ -2896,6 +2907,8 @@ function saveProduct() {
   const img = imgData || imgUrl;
   const desc = document.getElementById('p-desc').value.trim();
   if (!name) { showToast('Nama produk harus diisi!', 'error'); return; }
+  const btn = document.getElementById('p-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Menyimpan...'; }
   if (id) {
     const idx = products.findIndex(p => p.id === parseInt(id));
     if (idx >= 0) products[idx] = { ...products[idx], name, type, cat, buy, sell, stock, icon, img, desc };
@@ -2904,8 +2917,16 @@ function saveProduct() {
     products.push({ id: nextProductId++, name, type, cat, buy, sell, stock, icon, img, desc });
     logActivity('Tambah Produk', `${name}`);
   }
-  save(); renderAll(); closeModal('modal-product');
-  showToast(`Produk "${name}" disimpan!`, 'success');
+  try {
+    await save();
+    renderAll();
+    closeModal('modal-product');
+    showToast(`Produk "${name}" disimpan!`, 'success');
+  } catch (err) {
+    showFirebaseError(err);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Simpan Produk'; }
+  }
 }
 
 function openImgChange(pid) {
