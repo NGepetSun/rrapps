@@ -807,6 +807,7 @@
 <!-- Firebase SDK (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
 <!-- ================= LOADING OVERLAY ================= -->
 <div id="loadingOverlay">
@@ -1705,6 +1706,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const storage = firebase.storage();
 
 // Docs: users & products get their own doc (they hold base64 photos/images,
 // kept isolated so one doc doesn't bloat past Firestore's 1MB doc limit).
@@ -1928,6 +1930,32 @@ async function initFirebaseData() {
   } catch (err) {
     showFirebaseError(err);
   }
+}
+
+// ════════════════════════════════════
+//  STORAGE UPLOAD HELPER
+// ════════════════════════════════════
+// Upload file gambar ke Firebase Storage (bukan base64 ke Firestore),
+// supaya tidak kena limit 1MB per dokumen Firestore.
+const MAX_IMAGE_MB = 5;
+function uploadImageToStorage(file, folder) {
+  return new Promise((resolve, reject) => {
+    if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
+      reject(new Error(`Ukuran gambar max ${MAX_IMAGE_MB}MB!`));
+      return;
+    }
+    const safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const ref = storage.ref().child(`${folder}/${safeName}`);
+    const task = ref.put(file);
+    task.on('state_changed', null, err => reject(err), async () => {
+      try {
+        const url = await task.snapshot.ref.getDownloadURL();
+        resolve(url);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  });
 }
 
 function save() {
@@ -2315,21 +2343,22 @@ function updateProfileUI() {
 function handleProfilePhotoUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 300 * 1024) { showToast('Ukuran foto max 300KB (biar muat di database bersama)!', 'error'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    const dataUrl = e.target.result;
-    const idx = users.findIndex(x => x.id === state.currentUser.id);
-    if (idx >= 0) {
-      users[idx].photo = dataUrl;
-      state.currentUser = users[idx];
-    }
-    save();
-    updateProfileUI();
-    renderOrderTable();
-    showToast('Foto profil diperbarui!', 'success');
-  };
-  reader.readAsDataURL(file);
+  showToast('Mengunggah foto...', 'success');
+  uploadImageToStorage(file, 'profile_photos')
+    .then(url => {
+      const idx = users.findIndex(x => x.id === state.currentUser.id);
+      if (idx >= 0) {
+        users[idx].photo = url;
+        state.currentUser = users[idx];
+      }
+      save();
+      updateProfileUI();
+      renderOrderTable();
+      showToast('Foto profil diperbarui!', 'success');
+    })
+    .catch(err => {
+      showToast(err.message || 'Gagal upload foto!', 'error');
+    });
   input.value = '';
 }
 
@@ -2829,14 +2858,18 @@ function openEditProduct(pid) {
 function handleImgUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 300 * 1024) { showToast('Ukuran gambar max 300KB (biar muat di database bersama)!', 'error'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('p-img-data').value = e.target.result;
-    document.getElementById('p-img').value = '';
-    document.getElementById('p-img-preview').innerHTML = `<img src="${e.target.result}">`;
-  };
-  reader.readAsDataURL(file);
+  const preview = document.getElementById('p-img-preview');
+  preview.innerHTML = '<span style="font-size:11px">Mengunggah...</span>';
+  document.getElementById('p-img').value = '';
+  uploadImageToStorage(file, 'product_images')
+    .then(url => {
+      document.getElementById('p-img-data').value = url;
+      preview.innerHTML = `<img src="${url}">`;
+    })
+    .catch(err => {
+      showToast(err.message || 'Gagal upload gambar!', 'error');
+      preview.innerHTML = '<span id="p-img-emoji">🖼</span>';
+    });
 }
 
 function previewImgUrl(url) {
@@ -2889,14 +2922,18 @@ function openImgChange(pid) {
 function handleImgchangeUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 300 * 1024) { showToast('Ukuran gambar max 300KB (biar muat di database bersama)!', 'error'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('imgchange-data').value = e.target.result;
-    document.getElementById('imgchange-url').value = '';
-    document.getElementById('imgchange-preview').innerHTML = `<img src="${e.target.result}">`;
-  };
-  reader.readAsDataURL(file);
+  const preview = document.getElementById('imgchange-preview');
+  preview.innerHTML = '<span style="font-size:11px">Mengunggah...</span>';
+  document.getElementById('imgchange-url').value = '';
+  uploadImageToStorage(file, 'product_images')
+    .then(url => {
+      document.getElementById('imgchange-data').value = url;
+      preview.innerHTML = `<img src="${url}">`;
+    })
+    .catch(err => {
+      showToast(err.message || 'Gagal upload gambar!', 'error');
+      preview.innerHTML = '<span>🖼</span>';
+    });
 }
 
 function saveImgChange() {
