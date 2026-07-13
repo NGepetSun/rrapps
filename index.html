@@ -1172,6 +1172,27 @@
           <div class="section-title">🕒 Log Aktivitas</div>
           <button class="btn btn-outline btn-sm" onclick="clearActivityLog()">🗑 Bersihkan Log</button>
         </div>
+
+        <div class="table-wrap dev-only" style="margin-bottom:16px">
+          <div class="table-top"><span class="table-title">🔗 Integrasi Discord Webhook</span></div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+            <div style="font-size:11.5px;color:var(--muted)">Setiap log aktivitas baru akan otomatis dikirim ke channel Discord lewat webhook ini.</div>
+            <div class="form-row single">
+              <div class="form-group">
+                <label class="form-label">Webhook URL</label>
+                <input class="form-input" id="discord-webhook-url" placeholder="https://discord.com/api/webhooks/...">
+              </div>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#fff;cursor:pointer">
+              <input type="checkbox" id="discord-webhook-enabled" onchange="toggleDiscordWebhookEnabled(this.checked)"> Aktifkan pengiriman otomatis
+            </label>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary btn-sm" onclick="saveDiscordWebhook()">💾 Simpan</button>
+              <button class="btn btn-outline btn-sm" onclick="testDiscordWebhook()">📨 Test Kirim</button>
+            </div>
+          </div>
+        </div>
+
         <div class="table-wrap">
           <div class="table-top"><span class="table-title">📜 Riwayat Aktivitas Sistem</span></div>
           <table>
@@ -1794,6 +1815,9 @@ let illegalCategories = [];
 // Kategori yang "disembunyikan" dari halaman Checkout saja — TIDAK menghapus
 // data sub kategori/produk di Inventori. illegalCategories & products tetap utuh.
 let checkoutHiddenCats = [];
+// Integrasi Discord Webhook — tiap logActivity() otomatis dikirim ke channel Discord.
+let discordWebhookUrl = '';
+let discordWebhookEnabled = false;
 
 let nextProductId = 1;
 let nextOrderId = 1;
@@ -1896,6 +1920,8 @@ async function initFirebaseData() {
       activityLog = d.activityLog || [];
       illegalCategories = (d.illegalCategories && d.illegalCategories.length) ? d.illegalCategories : DEFAULT_ILLEGAL_CATEGORIES.slice();
       checkoutHiddenCats = d.checkoutHiddenCats || [];
+      discordWebhookUrl = d.discordWebhookUrl || '';
+      discordWebhookEnabled = !!d.discordWebhookEnabled;
     } else {
       orders = [];
       setorItems = DEFAULT_SETOR_ITEMS.slice();
@@ -1904,7 +1930,9 @@ async function initFirebaseData() {
       activityLog = [];
       illegalCategories = DEFAULT_ILLEGAL_CATEGORIES.slice();
       checkoutHiddenCats = [];
-      await panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories, checkoutHiddenCats });
+      discordWebhookUrl = '';
+      discordWebhookEnabled = false;
+      await panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories, checkoutHiddenCats, discordWebhookUrl, discordWebhookEnabled });
     }
 
     migrateUsers();
@@ -1943,6 +1971,9 @@ async function initFirebaseData() {
       activityLog = d.activityLog || [];
       illegalCategories = (d.illegalCategories && d.illegalCategories.length) ? d.illegalCategories : illegalCategories;
       checkoutHiddenCats = d.checkoutHiddenCats || checkoutHiddenCats;
+      discordWebhookUrl = (d.discordWebhookUrl !== undefined) ? d.discordWebhookUrl : discordWebhookUrl;
+      discordWebhookEnabled = (d.discordWebhookEnabled !== undefined) ? !!d.discordWebhookEnabled : discordWebhookEnabled;
+      renderDiscordWebhookSettings();
       renderAll();
     }, showFirebaseError);
 
@@ -1992,22 +2023,133 @@ function save() {
   const writePromise = Promise.all([
     usersDocRef.set({ list: users }).catch(showFirebaseError),
     productsDocRef.set({ list: products }).catch(showFirebaseError),
-    panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories, checkoutHiddenCats }).catch(showFirebaseError),
+    panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories, checkoutHiddenCats, discordWebhookUrl, discordWebhookEnabled }).catch(showFirebaseError),
   ]);
   return withTimeout(writePromise, 8000);
 }
 
 function logActivity(action, detail) {
-  activityLog.push({
+  const entry = {
     id: nextLogId++,
     time: new Date().toISOString(),
     user: state.currentUser?.username || 'system',
     role: state.currentUser?.role || '-',
     action,
     detail: detail || '',
-  });
+  };
+  activityLog.push(entry);
   if (activityLog.length > 500) activityLog = activityLog.slice(-500);
+  sendDiscordLog(entry);
   return save();
+}
+
+// ── DISCORD WEBHOOK INTEGRATION ──
+// Kirim tiap entry log aktivitas ke channel Discord secara otomatis.
+// Gagal kirim (offline/URL salah) tidak akan mengganggu jalannya aplikasi.
+function sendDiscordLog(entry) {
+  if (!discordWebhookEnabled || !discordWebhookUrl) return;
+  if (entry.action === 'Buat Order') return; // order punya embed khusus, lihat sendDiscordOrderNotif()
+  const payload = {
+    username: state.bizName || 'Activity Log',
+    embeds: [{
+      title: `📋 ${entry.action}`,
+      description: entry.detail || '-',
+      color: 0x5865f2,
+      fields: [
+        { name: 'User', value: entry.user || '-', inline: true },
+        { name: 'Role', value: (entry.role || '-').toUpperCase(), inline: true },
+      ],
+      timestamp: entry.time,
+    }],
+  };
+  fetch(discordWebhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => { /* diamkan — jangan ganggu UX kalau webhook gagal/offline */ });
+}
+
+// Notifikasi khusus order masuk — lebih lengkap dari log biasa (nama pemesan, produk, qty, total, dll).
+function catLabelFor(prod) {
+  if (prod.type === 'illegal') {
+    const c = illegalCategories.find(c => c.value === prod.cat);
+    if (c) return `${c.icon} ${c.label}`;
+  }
+  return prod.cat || '-';
+}
+
+function sendDiscordOrderNotif(order, prod) {
+  if (!discordWebhookEnabled || !discordWebhookUrl) return;
+  const payload = {
+    username: state.bizName || 'Order Masuk',
+    embeds: [{
+      title: '🛒 Order Baru Masuk',
+      color: 0xfaa61a,
+      fields: [
+        { name: '👤 Pemesan', value: order.buyer || '-', inline: true },
+        { name: '📦 Produk', value: `${prod?.icon || ''} ${prod?.name || '-'}`.trim(), inline: true },
+        { name: '🏷 Kategori', value: catLabelFor(prod || {}), inline: true },
+        { name: '🔢 Jumlah', value: String(order.qty), inline: true },
+        { name: '💰 Total', value: fmt(order.total), inline: true },
+        { name: '📊 Status', value: 'Pending', inline: true },
+        { name: '📝 Catatan', value: order.note || '-', inline: false },
+      ],
+      timestamp: order.createdAt || new Date().toISOString(),
+    }],
+  };
+  fetch(discordWebhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => { /* diamkan — jangan ganggu UX kalau webhook gagal/offline */ });
+}
+
+function renderDiscordWebhookSettings() {
+  const urlEl = document.getElementById('discord-webhook-url');
+  const chkEl = document.getElementById('discord-webhook-enabled');
+  if (urlEl) urlEl.value = discordWebhookUrl || '';
+  if (chkEl) chkEl.checked = !!discordWebhookEnabled;
+}
+
+function saveDiscordWebhook() {
+  if (!isDeveloper()) { showToast('Hanya developer yang bisa mengatur ini!', 'error'); return; }
+  const url = document.getElementById('discord-webhook-url').value.trim();
+  if (url && !/^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(url)) {
+    showToast('URL webhook tidak valid! Harus link webhook Discord.', 'error');
+    return;
+  }
+  discordWebhookUrl = url;
+  logActivity('Update Discord Webhook', url ? 'Webhook URL disimpan' : 'Webhook URL dikosongkan');
+  showToast('Pengaturan webhook Discord disimpan!', 'success');
+}
+
+function toggleDiscordWebhookEnabled(checked) {
+  if (!isDeveloper()) { showToast('Hanya developer yang bisa mengatur ini!', 'error'); return; }
+  if (checked && !discordWebhookUrl) {
+    showToast('Isi & simpan Webhook URL terlebih dahulu!', 'error');
+    document.getElementById('discord-webhook-enabled').checked = false;
+    return;
+  }
+  discordWebhookEnabled = checked;
+  logActivity('Toggle Discord Webhook', checked ? 'Pengiriman otomatis diaktifkan' : 'Pengiriman otomatis dimatikan');
+  showToast(checked ? 'Pengiriman log ke Discord diaktifkan.' : 'Pengiriman log ke Discord dimatikan.', 'success');
+}
+
+function testDiscordWebhook() {
+  if (!isDeveloper()) { showToast('Hanya developer yang bisa mengatur ini!', 'error'); return; }
+  const url = document.getElementById('discord-webhook-url').value.trim();
+  if (!url) { showToast('Isi Webhook URL dulu!', 'error'); return; }
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: state.bizName || 'Activity Log',
+      embeds: [{ title: '✅ Test Koneksi Berhasil', description: `Webhook terhubung dengan panel ${state.bizName || ''}.`, color: 0x57f287, timestamp: new Date().toISOString() }],
+    }),
+  }).then(res => {
+    if (res.ok) showToast('Test berhasil! Cek channel Discord kamu.', 'success');
+    else showToast('Gagal kirim, cek kembali URL webhook.', 'error');
+  }).catch(() => showToast('Gagal kirim, cek koneksi/URL webhook.', 'error'));
 }
 
 initFirebaseData();
@@ -2338,6 +2480,7 @@ function renderAll() {
   renderCategoryCounts();
   renderDataPage();
   renderLogPage();
+  renderDiscordWebhookSettings();
   if (!document.getElementById('tab-riwayat').classList.contains('hidden')) renderRiwayatTab();
 }
 
@@ -3091,6 +3234,7 @@ function saveMemberOrder() {
     createdAt: new Date().toISOString(),
   });
   logActivity('Buat Order', `${state.currentUser.username} — ${prod.name} x${qty}`);
+  sendDiscordOrderNotif(orders[orders.length - 1], prod);
   renderAll(); closeModal('modal-member-order');
   showToast(`Order berhasil dibuat! Menunggu konfirmasi admin.`, 'success');
 }
@@ -3122,6 +3266,7 @@ function saveOrder() {
   const total = prod.sell * qty;
   orders.push({ id: nextOrderId++, buyer, buyerUsername, productId: prod.id, category: prod.cat, type: prod.type || 'illegal', qty, total, note, status: 'pending', createdAt: new Date().toISOString() });
   logActivity('Buat Order', `${buyer} — ${prod.name} x${qty}`);
+  sendDiscordOrderNotif(orders[orders.length - 1], prod);
   renderAll(); closeModal('modal-order');
   showToast(`Order dari ${buyer} berhasil dibuat!`, 'success');
 }
