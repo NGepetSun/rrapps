@@ -1111,17 +1111,16 @@
       <div class="page-section" id="page-bisnis">
         <div class="section-header">
           <div class="section-title">Inventori Ilegal</div>
+          <button class="btn btn-outline" onclick="openKelolaKategoriModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Sub Kategori
+          </button>
           <button class="btn btn-primary" onclick="openAddProductModal('weapon','illegal')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Tambah Produk
           </button>
         </div>
-        <div class="cat-tabs" id="bisnis-tabs">
-          <div class="cat-tab active" onclick="filterBisnis('all',this)"> Semua</div>
-          <div class="cat-tab" onclick="filterBisnis('weapon',this)"> Senjata</div>
-          <div class="cat-tab" onclick="filterBisnis('drug',this)"> Drugs</div>
-          <div class="cat-tab" onclick="filterBisnis('ammo',this)"> Amunisi</div>
-        </div>
+        <div class="cat-tabs" id="bisnis-tabs"></div>
         <div class="table-wrap">
           <div class="table-top">
             <span class="table-title"> Daftar Produk</span>
@@ -1271,7 +1270,7 @@
           <label class="form-label">Jenis</label>
           <select class="form-select" id="p-type" onchange="updateCatOptions()">
             <option value="illegal">🚫 Ilegal (Senjata/Drugs/Amunisi)</option>
-            <option value="biz">🏪 Bisnis (Barang Legal)</option>
+            <option value="biz">🏪 Bisnis (Barang Ilegal)</option>
           </select>
         </div>
         <div class="form-group">
@@ -1571,6 +1570,29 @@
   </div>
 </div>
 
+<!-- KELOLA KATEGORI INVENTORI (ADMIN) -->
+<div class="modal-overlay" id="modal-kelola-kategori">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">KELOLA SUB KATEGORI</div>
+      <button class="modal-close" onclick="closeModal('modal-kelola-kategori')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="kelola-kategori-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+      <div class="form-row">
+        <div class="form-group" style="flex:0 0 70px"><label class="form-label">Icon</label><input class="form-input" id="kki-icon" placeholder="📦" maxlength="2"></div>
+        <div class="form-group"><label class="form-label">Nama Sub Kategori</label><input class="form-input" id="kki-name" placeholder="cth: Bahan Kimia"></div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="addIllegalCategory()">+ Tambah Sub Kategori</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeModal('modal-kelola-kategori')">Selesai</button>
+    </div>
+  </div>
+</div>
+
 <!-- REKRUT ANGGOTA -->
 <div class="modal-overlay" id="modal-rekrut">
   <div class="modal" style="max-width:400px">
@@ -1736,6 +1758,12 @@ const DEFAULT_SETOR_ITEMS = [
   { id: 4, name: 'Meth', icon: '🔵' },
 ];
 
+const DEFAULT_ILLEGAL_CATEGORIES = [
+  { value: 'weapon', label: 'Senjata', icon: '🔫' },
+  { value: 'drug', label: 'Drugs', icon: '💊' },
+  { value: 'ammo', label: 'Amunisi', icon: '🎯' },
+];
+
 const DEFAULT_DATA_SHEETS = [
   { id: 1, name: 'Sheet1', cols: ['Kolom A', 'Kolom B', 'Kolom C'], rows: [['', '', ''], ['', '', '']] },
 ];
@@ -1747,6 +1775,7 @@ let setorItems = [];
 let setoran = [];
 let dataSheets = [];
 let activityLog = [];
+let illegalCategories = [];
 
 let nextProductId = 1;
 let nextOrderId = 1;
@@ -1847,13 +1876,15 @@ async function initFirebaseData() {
       setoran = d.setoran || [];
       dataSheets = d.dataSheets ? deserializeDataSheets(d.dataSheets) : DEFAULT_DATA_SHEETS.slice();
       activityLog = d.activityLog || [];
+      illegalCategories = (d.illegalCategories && d.illegalCategories.length) ? d.illegalCategories : DEFAULT_ILLEGAL_CATEGORIES.slice();
     } else {
       orders = [];
       setorItems = DEFAULT_SETOR_ITEMS.slice();
       setoran = [];
       dataSheets = DEFAULT_DATA_SHEETS.slice();
       activityLog = [];
-      await panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog });
+      illegalCategories = DEFAULT_ILLEGAL_CATEGORIES.slice();
+      await panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories });
     }
 
     migrateUsers();
@@ -1890,6 +1921,7 @@ async function initFirebaseData() {
       setoran = d.setoran || [];
       dataSheets = d.dataSheets ? deserializeDataSheets(d.dataSheets) : dataSheets;
       activityLog = d.activityLog || [];
+      illegalCategories = (d.illegalCategories && d.illegalCategories.length) ? d.illegalCategories : illegalCategories;
       renderAll();
     }, showFirebaseError);
 
@@ -1902,7 +1934,7 @@ function save() {
   if (!firebaseReady) return;
   usersDocRef.set({ list: users }).catch(showFirebaseError);
   productsDocRef.set({ list: products }).catch(showFirebaseError);
-  panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog }).catch(showFirebaseError);
+  panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories }).catch(showFirebaseError);
 }
 
 function logActivity(action, detail) {
@@ -2553,16 +2585,27 @@ function drawChart(range) {
 // ════════════════════════════════════
 function filterBisnis(cat, el) {
   state.bisnisFilter = cat;
-  document.querySelectorAll('#bisnis-tabs .cat-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
   renderBisnisTable();
 }
 
+function renderBisnisCatTabs() {
+  const wrap = document.getElementById('bisnis-tabs');
+  if (!wrap) return;
+  const active = state.bisnisFilter || 'all';
+  let html = `<div class="cat-tab ${active === 'all' ? 'active' : ''}" onclick="filterBisnis('all',this)">🗂 Semua</div>`;
+  illegalCategories.forEach(c => {
+    html += `<div class="cat-tab ${active === c.value ? 'active' : ''}" onclick="filterBisnis('${c.value.replace(/'/g, "\\'")}',this)">${c.icon || '📦'} ${c.label}</div>`;
+  });
+  wrap.innerHTML = html;
+}
+
 function renderBisnisTable() {
+  renderBisnisCatTabs();
   const grid = document.getElementById('bisnis-grid');
   if (!grid) return;
   const q = (document.getElementById('bisnis-search')?.value || '').toLowerCase();
   let list = products.filter(p => p.type === 'illegal' && (state.bisnisFilter === 'all' || p.cat === state.bisnisFilter) && p.name.toLowerCase().includes(q));
+  list = [...list].sort((a, b) => a.sell - b.sell);
   if (!list.length) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📦</div><p>TIDAK ADA PRODUK</p></div>`;
     return;
@@ -2594,6 +2637,7 @@ function renderBizTable() {
   if (!grid) return;
   const q = (document.getElementById('biz-search')?.value || '').toLowerCase();
   let list = products.filter(p => p.type === 'biz' && (state.bizFilter === 'all' || p.cat === state.bizFilter) && p.name.toLowerCase().includes(q));
+  list = [...list].sort((a, b) => a.sell - b.sell);
   if (!list.length) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🏪</div><p>BELUM ADA STOK BISNIS</p></div>`;
     return;
@@ -2721,14 +2765,6 @@ function populateOrderProductSelect() {
 // ════════════════════════════════════
 //  PRODUCTS CRUD
 // ════════════════════════════════════
-const CAT_OPTIONS = {
-  illegal: [
-    { value: 'weapon', label: '🔫 Senjata', icon: '🔫' },
-    { value: 'drug', label: '💊 Drugs', icon: '💊' },
-    { value: 'ammo', label: '🎯 Amunisi', icon: '🎯' },
-  ],
-};
-
 function updateCatOptions(presetCat) {
   const type = document.getElementById('p-type').value;
   const catSel = document.getElementById('p-cat');
@@ -2745,8 +2781,8 @@ function updateCatOptions(presetCat) {
   } else {
     catManual.classList.add('hidden');
     catSel.classList.remove('hidden');
-    catLabel.textContent = 'Kategori';
-    const opts = CAT_OPTIONS[type] || CAT_OPTIONS.illegal;
+    catLabel.textContent = 'Sub Kategori';
+    const opts = illegalCategories.map(c => ({ value: c.value, label: `${c.icon || '📦'} ${c.label}` }));
     catSel.innerHTML = opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
     if (presetCat) catSel.value = presetCat;
   }
@@ -2820,7 +2856,7 @@ function saveProduct() {
   const buy = parseInt(document.getElementById('p-buy').value) || 0;
   const sell = parseInt(document.getElementById('p-sell').value) || 0;
   const stock = parseInt(document.getElementById('p-stock').value) || 0;
-  const catMeta = (CAT_OPTIONS[type] || []).find(o => o.value === cat);
+  const catMeta = type === 'biz' ? null : illegalCategories.find(o => o.value === cat);
   const icon = document.getElementById('p-icon').value || (catMeta ? catMeta.icon : '📦');
   const imgData = document.getElementById('p-img-data').value;
   const imgUrl = document.getElementById('p-img').value.trim();
@@ -3243,6 +3279,59 @@ function removeSetorItem(id) {
   save();
   renderKelolaSetorList();
   showToast('Barang dihapus.', 'warning');
+}
+
+// ── KELOLA SUB KATEGORI INVENTORI (ADMIN CUSTOM) ──
+function slugifyCat(name) {
+  return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || ('cat_' + Date.now());
+}
+
+function openKelolaKategoriModal() {
+  if (!isAdmin()) { showToast('Hanya admin yang bisa mengelola kategori!', 'error'); return; }
+  renderKelolaKategoriList();
+  document.getElementById('kki-icon').value = '';
+  document.getElementById('kki-name').value = '';
+  openModal('modal-kelola-kategori');
+}
+
+function renderKelolaKategoriList() {
+  const wrap = document.getElementById('kelola-kategori-list');
+  wrap.innerHTML = illegalCategories.length
+    ? illegalCategories.map(c => `<div class="kelola-item-row">
+        <span style="font-size:16px">${c.icon || '📦'}</span>
+        <span style="flex:1;font-size:12.5px;color:#fff">${c.label}</span>
+        <button class="icon-btn danger" onclick="removeIllegalCategory('${c.value.replace(/'/g, "\\'")}')">✕</button>
+      </div>`).join('')
+    : `<div class="empty-state" style="padding:14px"><p style="font-size:11px">Belum ada sub kategori</p></div>`;
+}
+
+function addIllegalCategory() {
+  const icon = document.getElementById('kki-icon').value.trim() || '📦';
+  const name = document.getElementById('kki-name').value.trim();
+  if (!name) { showToast('Nama sub kategori harus diisi!', 'error'); return; }
+  const value = slugifyCat(name);
+  if (illegalCategories.find(c => c.value === value)) { showToast('Sub kategori sudah ada!', 'error'); return; }
+  illegalCategories.push({ value, label: name, icon });
+  logActivity('Tambah Sub Kategori', name);
+  save();
+  document.getElementById('kki-icon').value = '';
+  document.getElementById('kki-name').value = '';
+  renderKelolaKategoriList();
+  renderBisnisCatTabs();
+  showToast(`Sub kategori "${name}" ditambahkan!`, 'success');
+}
+
+function removeIllegalCategory(value) {
+  if (products.some(p => p.type === 'illegal' && p.cat === value)) {
+    showToast('Tidak bisa hapus, masih ada produk di kategori ini!', 'error');
+    return;
+  }
+  illegalCategories = illegalCategories.filter(c => c.value !== value);
+  logActivity('Hapus Sub Kategori', value);
+  save();
+  renderKelolaKategoriList();
+  renderBisnisCatTabs();
+  showToast('Sub kategori dihapus.', 'warning');
 }
 
 // ── REKRUT ──
