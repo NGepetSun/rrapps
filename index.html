@@ -865,9 +865,7 @@
         <a data-page="overview" class="active" onclick="showPage('overview')"><span class="nav-ic"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span> Overview</a>
         <a data-page="biz" class="admin-only" onclick="showPage('biz')"><span class="nav-ic"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M9 21V13h6v8"/><path d="M3 9h18"/></svg></span> Bisnis</a>
         <a data-page="order" onclick="showPage('order')"><span class="nav-ic"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span> Order <span class="nav-badge" id="order-badge">0</span></a>
-        <a data-page="weapons" onclick="showPage('weapons')"><span class="nav-ic"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg></span> Senjata</a>
-        <a data-page="drugs" onclick="showPage('drugs')"><span class="nav-ic"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M10.5 20.5a4.95 4.95 0 1 1-7-7l9-9a4.95 4.95 0 1 1 7 7l-4.5 4.5"/><path d="M8.5 8.5l7 7"/></svg></span> Drugs</a>
-        <a data-page="ammo" onclick="showPage('ammo')"><span class="nav-ic"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.8" fill="currentColor"/></svg></span> Amunisi</a>
+        <a data-page="checkout" onclick="showPage('checkout')"><span class="nav-ic"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></span> Checkout</a>
         <a data-page="bisnis" class="admin-only" onclick="showPage('bisnis')"><span class="nav-ic"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span> Inventori</a>
         <a data-page="member" onclick="showPage('member')"><span class="nav-ic"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Member</a>
         <a data-page="data" onclick="showPage('data')"><span class="nav-ic"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></span> Data</a>
@@ -1156,31 +1154,16 @@
         </div>
       </div>
 
-      <!-- ── WEAPONS CATALOG ── -->
-      <div class="page-section" id="page-weapons">
+      <!-- ── CHECKOUT (SENJATA + DRUGS + AMUNISI + SUB KATEGORI INVENTORI) ── -->
+      <div class="page-section" id="page-checkout">
         <div class="section-header">
-          <div class="section-title">Katalog Senjata</div>
-          <button class="btn btn-primary admin-only-btn" onclick="openAddProductModal('weapon')">+ Tambah Senjata</button>
+          <div class="section-title">Checkout</div>
+          <button class="btn btn-outline admin-only-btn" onclick="openKelolaCheckoutCatModal()">⚙️ Kategori Dijual</button>
+          <button class="btn btn-primary admin-only-btn" onclick="openAddProductModal('weapon','illegal')">+ Tambah Produk</button>
         </div>
-        <div class="product-grid" id="weapons-grid"></div>
-      </div>
-
-      <!-- ── DRUGS CATALOG ── -->
-      <div class="page-section" id="page-drugs">
-        <div class="section-header">
-          <div class="section-title">Katalog Drugs</div>
-          <button class="btn btn-primary admin-only-btn" onclick="openAddProductModal('drug')">+ Tambah Item</button>
-        </div>
-        <div class="product-grid" id="drugs-grid"></div>
-      </div>
-
-      <!-- ── AMMO CATALOG ── -->
-      <div class="page-section" id="page-ammo">
-        <div class="section-header">
-          <div class="section-title">Katalog Amunisi</div>
-          <button class="btn btn-primary admin-only-btn" onclick="openAddProductModal('ammo')">+ Tambah Amunisi</button>
-        </div>
-        <div class="product-grid" id="ammo-grid"></div>
+        <div class="cat-tabs" id="checkout-tabs"></div>
+        <input class="form-input" id="checkout-search" placeholder="Cari produk..." style="width:220px;padding:8px 12px;font-size:12px;margin-bottom:14px" oninput="renderCheckoutTable()"/>
+        <div class="product-grid" id="checkout-grid"></div>
       </div>
 
       <!-- ── LOG AKTIVITAS (ADMIN ONLY) ── -->
@@ -1234,17 +1217,9 @@
             <div class="market-left"><div class="market-dot" style="background:#4ad8a8;">🏪</div> Bisnis</div>
             <div class="market-status" id="cat-count-biz">0</div>
           </div>
-          <div class="market-row" onclick="showPage('weapons')">
-            <div class="market-left"><div class="market-dot" style="background:#e0637a;">🔫</div> Senjata</div>
-            <div class="market-status" id="cat-count-weapon">0</div>
-          </div>
-          <div class="market-row" onclick="showPage('drugs')">
-            <div class="market-left"><div class="market-dot" style="background:#7b6ee0;">💊</div> Drugs</div>
-            <div class="market-status" id="cat-count-drug">0</div>
-          </div>
-          <div class="market-row" onclick="showPage('ammo')">
-            <div class="market-left"><div class="market-dot" style="background:#5aa0e0;">🎯</div> Amunisi</div>
-            <div class="market-status" id="cat-count-ammo">0</div>
+          <div class="market-row" onclick="showPage('checkout')">
+            <div class="market-left"><div class="market-dot" style="background:#e0637a;">🛒</div> Checkout</div>
+            <div class="market-status" id="cat-count-checkout">0</div>
           </div>
         </div>
         <div class="market-list hidden" id="tab-riwayat"></div>
@@ -1594,6 +1569,25 @@
   </div>
 </div>
 
+<!-- KELOLA KATEGORI DIJUAL DI CHECKOUT (tidak mengubah data Inventori) -->
+<div class="modal-overlay" id="modal-kelola-checkout-cat">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">KATEGORI DIJUAL DI CHECKOUT</div>
+      <button class="modal-close" onclick="closeModal('modal-kelola-checkout-cat')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:12px">Sembunyikan sub kategori dari halaman Checkout tanpa menghapus data & produknya di Inventori.</div>
+      <div id="kelola-checkout-cat-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeModal('modal-kelola-checkout-cat')">Selesai</button>
+    </div>
+  </div>
+</div>
+
 <!-- REKRUT ANGGOTA -->
 <div class="modal-overlay" id="modal-rekrut">
   <div class="modal" style="max-width:400px">
@@ -1658,20 +1652,29 @@
 
 <!-- TAMBAH ADMIN (khusus developer) -->
 <div class="modal-overlay" id="modal-tambah-admin">
-  <div class="modal" style="max-width:400px">
+  <div class="modal" style="max-width:420px">
     <div class="modal-header">
-      <div class="modal-title">TAMBAH ADMIN</div>
+      <div class="modal-title">KELOLA ADMIN</div>
       <button class="modal-close" onclick="closeModal('modal-tambah-admin')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <div class="modal-body">
-      <div class="form-row single"><div class="form-group"><label class="form-label">Username</label><input class="form-input" id="ta-username" placeholder="username admin baru..."></div></div>
-      <div class="form-row single"><div class="form-group"><label class="form-label">Password Login</label><input class="form-input" id="ta-password" type="password" placeholder="password..."></div></div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">Pilih Member</label>
+          <select class="form-input" id="ta-member-select"></select>
+        </div>
+      </div>
+      <div id="ta-empty-msg" class="hidden" style="font-size:11.5px;color:var(--muted);padding:6px 2px 0 2px">Tidak ada member yang bisa dijadikan admin.</div>
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">
+        <label class="form-label" style="display:block;margin-bottom:8px">Admin Saat Ini</label>
+        <div id="ta-current-admin-list"></div>
+      </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-tambah-admin')">Batal</button>
-      <button class="btn btn-primary" onclick="saveTambahAdmin()">+ Tambah Admin</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-tambah-admin')">Tutup</button>
+      <button class="btn btn-primary" id="ta-submit-btn" onclick="saveTambahAdmin()">Jadikan Admin</button>
     </div>
   </div>
 </div>
@@ -1733,6 +1736,7 @@ let state = {
   orderFilter: 'all',
   bisnisFilter: 'all',
   bizFilter: 'all',
+  checkoutFilter: 'all',
   currency: '$',
   bizName: 'RR APPS',
   chartRange: 'weekly',
@@ -1787,6 +1791,9 @@ let setoran = [];
 let dataSheets = [];
 let activityLog = [];
 let illegalCategories = [];
+// Kategori yang "disembunyikan" dari halaman Checkout saja — TIDAK menghapus
+// data sub kategori/produk di Inventori. illegalCategories & products tetap utuh.
+let checkoutHiddenCats = [];
 
 let nextProductId = 1;
 let nextOrderId = 1;
@@ -1888,6 +1895,7 @@ async function initFirebaseData() {
       dataSheets = d.dataSheets ? deserializeDataSheets(d.dataSheets) : DEFAULT_DATA_SHEETS.slice();
       activityLog = d.activityLog || [];
       illegalCategories = (d.illegalCategories && d.illegalCategories.length) ? d.illegalCategories : DEFAULT_ILLEGAL_CATEGORIES.slice();
+      checkoutHiddenCats = d.checkoutHiddenCats || [];
     } else {
       orders = [];
       setorItems = DEFAULT_SETOR_ITEMS.slice();
@@ -1895,7 +1903,8 @@ async function initFirebaseData() {
       dataSheets = DEFAULT_DATA_SHEETS.slice();
       activityLog = [];
       illegalCategories = DEFAULT_ILLEGAL_CATEGORIES.slice();
-      await panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories });
+      checkoutHiddenCats = [];
+      await panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories, checkoutHiddenCats });
     }
 
     migrateUsers();
@@ -1933,6 +1942,7 @@ async function initFirebaseData() {
       dataSheets = d.dataSheets ? deserializeDataSheets(d.dataSheets) : dataSheets;
       activityLog = d.activityLog || [];
       illegalCategories = (d.illegalCategories && d.illegalCategories.length) ? d.illegalCategories : illegalCategories;
+      checkoutHiddenCats = d.checkoutHiddenCats || checkoutHiddenCats;
       renderAll();
     }, showFirebaseError);
 
@@ -1982,7 +1992,7 @@ function save() {
   const writePromise = Promise.all([
     usersDocRef.set({ list: users }).catch(showFirebaseError),
     productsDocRef.set({ list: products }).catch(showFirebaseError),
-    panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories }).catch(showFirebaseError),
+    panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories, checkoutHiddenCats }).catch(showFirebaseError),
   ]);
   return withTimeout(writePromise, 8000);
 }
@@ -2321,9 +2331,7 @@ function renderAll() {
   renderBizTable();
   renderBisnisTable();
   renderOrderTable();
-  renderCatalog('weapon', 'weapons-grid');
-  renderCatalog('drug', 'drugs-grid');
-  renderCatalog('ammo', 'ammo-grid');
+  renderCheckoutTable();
   renderMemberRoster();
   renderSetoranTab();
   populateOrderProductSelect();
@@ -2382,9 +2390,8 @@ function handleProfilePhotoUpload(input) {
 }
 
 function renderCategoryCounts() {
-  document.getElementById('cat-count-weapon').textContent = products.filter(p => p.cat === 'weapon').length;
-  document.getElementById('cat-count-drug').textContent = products.filter(p => p.cat === 'drug').length;
-  document.getElementById('cat-count-ammo').textContent = products.filter(p => p.cat === 'ammo').length;
+  const checkoutEl = document.getElementById('cat-count-checkout');
+  if (checkoutEl) checkoutEl.textContent = products.filter(p => p.type === 'illegal' && !checkoutHiddenCats.includes(p.cat)).length;
   const bizEl = document.getElementById('cat-count-biz');
   if (bizEl) bizEl.textContent = products.filter(p => p.type === 'biz').length;
 }
@@ -2765,12 +2772,30 @@ function updateOrderBadge() {
 // ════════════════════════════════════
 //  CATALOG (product grid)
 // ════════════════════════════════════
-function renderCatalog(cat, gridId) {
-  const grid = document.getElementById(gridId);
+function filterCheckout(cat, el) {
+  state.checkoutFilter = cat;
+  renderCheckoutTable();
+}
+
+function renderCheckoutCatTabs() {
+  const wrap = document.getElementById('checkout-tabs');
+  if (!wrap) return;
+  const active = state.checkoutFilter || 'all';
+  let html = `<div class="cat-tab ${active === 'all' ? 'active' : ''}" onclick="filterCheckout('all',this)">🗂 Semua</div>`;
+  illegalCategories.filter(c => !checkoutHiddenCats.includes(c.value)).forEach(c => {
+    html += `<div class="cat-tab ${active === c.value ? 'active' : ''}" onclick="filterCheckout('${c.value.replace(/'/g, "\\'")}',this)">${c.icon || '📦'} ${c.label}</div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+function renderCheckoutTable() {
+  renderCheckoutCatTabs();
+  const grid = document.getElementById('checkout-grid');
   if (!grid) return;
-  const items = products.filter(p => p.cat === cat);
+  const q = (document.getElementById('checkout-search')?.value || '').toLowerCase();
+  const items = products.filter(p => p.type === 'illegal' && !checkoutHiddenCats.includes(p.cat) && (state.checkoutFilter === 'all' || p.cat === state.checkoutFilter) && p.name.toLowerCase().includes(q));
   if (!items.length) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📦</div><p>BELUM ADA ITEM</p></div>`;
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🛒</div><p>BELUM ADA ITEM</p></div>`;
     return;
   }
   const admin = isAdmin();
@@ -3383,6 +3408,7 @@ function addIllegalCategory() {
   document.getElementById('kki-name').value = '';
   renderKelolaKategoriList();
   renderBisnisCatTabs();
+  renderCheckoutCatTabs();
   showToast(`Sub kategori "${name}" ditambahkan!`, 'success');
 }
 
@@ -3395,7 +3421,49 @@ function removeIllegalCategory(value) {
   logActivity('Hapus Sub Kategori', value);
     renderKelolaKategoriList();
   renderBisnisCatTabs();
+  renderCheckoutCatTabs();
   showToast('Sub kategori dihapus.', 'warning');
+}
+
+// ── KATEGORI DIJUAL DI CHECKOUT (hanya menyembunyikan tampilan Checkout, data Inventori tidak disentuh) ──
+function openKelolaCheckoutCatModal() {
+  if (!isAdmin()) { showToast('Hanya admin yang bisa mengatur ini!', 'error'); return; }
+  renderKelolaCheckoutCatList();
+  openModal('modal-kelola-checkout-cat');
+}
+
+function renderKelolaCheckoutCatList() {
+  const wrap = document.getElementById('kelola-checkout-cat-list');
+  if (!wrap) return;
+  if (!illegalCategories.length) {
+    wrap.innerHTML = `<div class="empty-state" style="padding:10px"><p style="font-size:11px">Belum ada sub kategori</p></div>`;
+    return;
+  }
+  wrap.innerHTML = illegalCategories.map(c => {
+    const hidden = checkoutHiddenCats.includes(c.value);
+    return `<div class="kelola-item-row">
+      <span style="flex:1;font-size:12.5px;color:#fff">${c.icon || '📦'} ${c.label}</span>
+      <span style="font-size:10.5px;color:${hidden ? 'var(--danger)' : 'var(--success)'}">${hidden ? 'Disembunyikan' : 'Ditampilkan'}</span>
+      <button class="btn btn-sm ${hidden ? 'btn-primary' : 'btn-outline'}" onclick="toggleCheckoutCatVisibility('${c.value.replace(/'/g, "\\'")}')">${hidden ? 'Tampilkan' : 'Sembunyikan'}</button>
+    </div>`;
+  }).join('');
+}
+
+function toggleCheckoutCatVisibility(value) {
+  if (!isAdmin()) return;
+  const cat = illegalCategories.find(c => c.value === value);
+  if (!cat) return;
+  const idx = checkoutHiddenCats.indexOf(value);
+  if (idx >= 0) {
+    checkoutHiddenCats.splice(idx, 1);
+    logActivity('Tampilkan Kategori Checkout', cat.label);
+  } else {
+    checkoutHiddenCats.push(value);
+    if (state.checkoutFilter === value) state.checkoutFilter = 'all';
+    logActivity('Sembunyikan Kategori Checkout', cat.label);
+  }
+  renderKelolaCheckoutCatList();
+  renderCheckoutTable();
 }
 
 // ── REKRUT ──
@@ -3421,25 +3489,64 @@ function saveRekrut() {
   showToast(`${name} berhasil direkrut sebagai ${jabatanMeta(jabatan).label}!`, 'success');
 }
 
-// ── TAMBAH ADMIN (hanya developer) ──
+// ── KELOLA ADMIN (hanya developer) — promosikan member yang sudah ada ──
 function openTambahAdminModal() {
-  if (!isDeveloper()) { showToast('Hanya developer yang bisa menambah admin!', 'error'); return; }
-  document.getElementById('ta-username').value = '';
-  document.getElementById('ta-password').value = '';
+  if (!isDeveloper()) { showToast('Hanya developer yang bisa mengelola admin!', 'error'); return; }
+  renderTambahAdminModal();
   openModal('modal-tambah-admin');
 }
 
+function renderTambahAdminModal() {
+  const sel = document.getElementById('ta-member-select');
+  const emptyMsg = document.getElementById('ta-empty-msg');
+  const submitBtn = document.getElementById('ta-submit-btn');
+  const eligible = users.filter(u => u.role === 'member');
+
+  if (!eligible.length) {
+    sel.innerHTML = '';
+    sel.classList.add('hidden');
+    emptyMsg.classList.remove('hidden');
+    submitBtn.disabled = true;
+  } else {
+    sel.classList.remove('hidden');
+    emptyMsg.classList.add('hidden');
+    submitBtn.disabled = false;
+    sel.innerHTML = eligible.map(u => `<option value="${u.id}">${u.username} — ${jabatanMeta(u.jabatan || 'MEMBER').label}</option>`).join('');
+  }
+
+  const admins = users.filter(u => u.role === 'admin');
+  const listEl = document.getElementById('ta-current-admin-list');
+  listEl.innerHTML = admins.length
+    ? admins.map(u => `<div class="kelola-item-row">
+        <span style="flex:1;font-size:12.5px;color:#fff">${u.username}</span>
+        <button class="btn btn-sm btn-outline" onclick="cabutAdmin(${u.id})">Cabut Admin</button>
+      </div>`).join('')
+    : `<div class="empty-state" style="padding:10px"><p style="font-size:11px">Belum ada admin</p></div>`;
+}
+
 function saveTambahAdmin() {
-  if (!isDeveloper()) { showToast('Hanya developer yang bisa menambah admin!', 'error'); return; }
-  const name = document.getElementById('ta-username').value.trim();
-  const pass = document.getElementById('ta-password').value;
-  if (!name) { showToast('Username harus diisi!', 'error'); return; }
-  if (!pass) { showToast('Password harus diisi!', 'error'); return; }
-  if (users.find(u => u.username === name)) { showToast('Username sudah digunakan!', 'error'); return; }
-  users.push({ id: Date.now(), username: name, password: pass, role: 'admin', active: true, photo: '' });
-  logActivity('Tambah Admin', `${name} ditambahkan sebagai admin oleh developer`);
-  renderAll(); closeModal('modal-tambah-admin');
-  showToast(`Admin "${name}" berhasil ditambahkan!`, 'success');
+  if (!isDeveloper()) { showToast('Hanya developer yang bisa mengelola admin!', 'error'); return; }
+  const sel = document.getElementById('ta-member-select');
+  const id = parseInt(sel.value);
+  if (!id) { showToast('Pilih member terlebih dahulu!', 'error'); return; }
+  const u = users.find(x => x.id === id);
+  if (!u || u.role !== 'member') { showToast('Member tidak ditemukan!', 'error'); return; }
+  u.prevJabatan = u.jabatan;
+  u.role = 'admin';
+  logActivity('Tambah Admin', `${u.username} diberi akses admin oleh developer`);
+  renderAll(); renderTambahAdminModal();
+  showToast(`${u.username} sekarang menjadi admin!`, 'success');
+}
+
+function cabutAdmin(uid) {
+  if (!isDeveloper()) { showToast('Hanya developer yang bisa mencabut akses admin!', 'error'); return; }
+  const u = users.find(x => x.id === uid);
+  if (!u) return;
+  u.role = 'member';
+  if (u.prevJabatan) { u.jabatan = u.prevJabatan; delete u.prevJabatan; }
+  logActivity('Cabut Admin', `${u.username} dikembalikan menjadi member oleh developer`);
+  renderAll(); renderTambahAdminModal();
+  showToast(`Akses admin ${u.username} dicabut.`, 'warning');
 }
 
 // ── EDIT MEMBER (jabatan & status) ──
