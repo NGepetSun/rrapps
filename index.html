@@ -2079,11 +2079,6 @@ function sendDiscordOrderNotif(order, prod) {
       fields: [
         { name: '👤 Pemesan', value: order.buyer || '-', inline: true },
         { name: '📦 Produk', value: `${prod?.icon || ''} ${prod?.name || '-'}`.trim(), inline: true },
-        { name: '🏷 Kategori', value: catLabelFor(prod || {}), inline: true },
-        { name: '🔢 Jumlah', value: String(order.qty), inline: true },
-        { name: '💰 Total', value: fmt(order.total), inline: true },
-        { name: '📊 Status', value: 'Pending', inline: true },
-        { name: '📝 Catatan', value: order.note || '-', inline: false },
       ],
       timestamp: order.createdAt || new Date().toISOString(),
     }],
