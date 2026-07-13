@@ -1986,7 +1986,7 @@ function logActivity(action, detail) {
     detail: detail || '',
   });
   if (activityLog.length > 500) activityLog = activityLog.slice(-500);
-  save();
+  return save();
 }
 
 initFirebaseData();
@@ -2092,8 +2092,7 @@ function doLogin() {
     updateProfileUI();
     showPage('overview');
     logActivity('Login', 'developer masuk ke sistem (mode developer)');
-    save();
-    return;
+        return;
   }
 
   const user = users.find(x => x.username === u && x.password === p && x.active);
@@ -2111,13 +2110,11 @@ function doLogin() {
   updateProfileUI();
   showPage('overview');
   logActivity('Login', `${user.username} masuk ke sistem`);
-  save();
-}
+  }
 
 function doLogout() {
   if (state.currentUser) logActivity('Logout', `${state.currentUser.username} keluar dari sistem`);
-  save();
-  state.currentUser = null;
+    state.currentUser = null;
   dashboardPage.classList.add('hidden');
   loginPage.classList.remove('hidden');
   document.getElementById('loginError').style.display = 'none';
@@ -2744,7 +2741,7 @@ function advanceOrder(oid, newStatus) {
   }
   const labels = { acc_order: 'Order di-ACC ✅', acc_barang: 'Barang di-ACC 📦', selesai: 'Order selesai 🎯', rejected: 'Order ditolak ❌' };
   logActivity('Update Status Order', `Order #${String(oid).padStart(4, '0')} — ${labels[newStatus] || newStatus}`);
-  save(); renderAll();
+  renderAll();
   showToast(labels[newStatus] || 'Status diperbarui', 'success');
 }
 
@@ -2912,13 +2909,11 @@ async function saveProduct() {
   if (id) {
     const idx = products.findIndex(p => p.id === parseInt(id));
     if (idx >= 0) products[idx] = { ...products[idx], name, type, cat, buy, sell, stock, icon, img, desc };
-    logActivity('Edit Produk', `${name}`);
   } else {
     products.push({ id: nextProductId++, name, type, cat, buy, sell, stock, icon, img, desc });
-    logActivity('Tambah Produk', `${name}`);
   }
   try {
-    await save();
+    await logActivity(id ? 'Edit Produk' : 'Tambah Produk', `${name}`);
     renderAll();
     closeModal('modal-product');
     showToast(`Produk "${name}" disimpan!`, 'success');
@@ -3056,7 +3051,7 @@ function saveMemberOrder() {
     createdAt: new Date().toISOString(),
   });
   logActivity('Buat Order', `${state.currentUser.username} — ${prod.name} x${qty}`);
-  save(); renderAll(); closeModal('modal-member-order');
+  renderAll(); closeModal('modal-member-order');
   showToast(`Order berhasil dibuat! Menunggu konfirmasi admin.`, 'success');
 }
 
@@ -3087,7 +3082,7 @@ function saveOrder() {
   const total = prod.sell * qty;
   orders.push({ id: nextOrderId++, buyer, buyerUsername, productId: prod.id, category: prod.cat, type: prod.type || 'illegal', qty, total, note, status: 'pending', createdAt: new Date().toISOString() });
   logActivity('Buat Order', `${buyer} — ${prod.name} x${qty}`);
-  save(); renderAll(); closeModal('modal-order');
+  renderAll(); closeModal('modal-order');
   showToast(`Order dari ${buyer} berhasil dibuat!`, 'success');
 }
 
@@ -3264,8 +3259,7 @@ function saveSetoran() {
     createdAt: new Date().toISOString(),
   });
   logActivity('Setoran', `${username} — ${item.name} x${qty}`);
-  save();
-  closeModal('modal-setor');
+    closeModal('modal-setor');
   renderMemberRoster();
   renderSetoranTab();
   showToast(`Setoran ${item.name} x${qty} dari ${username} ditambahkan!`, 'success');
@@ -3294,8 +3288,7 @@ function deleteSetoran(id) {
   const s = setoran.find(x => x.id === id);
   setoran = setoran.filter(s => s.id !== id);
   logActivity('Hapus Setoran', s ? `${s.username} — ${s.itemName} x${s.qty}` : `#${id}`);
-  save();
-  renderSetoranTab();
+    renderSetoranTab();
   renderMemberRoster();
   showToast('Setoran dihapus.', 'warning');
 }
@@ -3371,8 +3364,7 @@ function addIllegalCategory() {
   if (illegalCategories.find(c => c.value === value)) { showToast('Sub kategori sudah ada!', 'error'); return; }
   illegalCategories.push({ value, label: name, icon });
   logActivity('Tambah Sub Kategori', name);
-  save();
-  document.getElementById('kki-icon').value = '';
+    document.getElementById('kki-icon').value = '';
   document.getElementById('kki-name').value = '';
   renderKelolaKategoriList();
   renderBisnisCatTabs();
@@ -3386,8 +3378,7 @@ function removeIllegalCategory(value) {
   }
   illegalCategories = illegalCategories.filter(c => c.value !== value);
   logActivity('Hapus Sub Kategori', value);
-  save();
-  renderKelolaKategoriList();
+    renderKelolaKategoriList();
   renderBisnisCatTabs();
   showToast('Sub kategori dihapus.', 'warning');
 }
@@ -3411,7 +3402,7 @@ function saveRekrut() {
   if (users.find(u => u.username === name)) { showToast('Nama sudah digunakan!', 'error'); return; }
   users.push({ id: Date.now(), username: name, password: pass, role: 'member', active: true, photo: '', jabatan, status });
   logActivity('Rekrut Member', `${name} — ${jabatanMeta(jabatan).label}`);
-  save(); renderAll(); closeModal('modal-rekrut');
+  renderAll(); closeModal('modal-rekrut');
   showToast(`${name} berhasil direkrut sebagai ${jabatanMeta(jabatan).label}!`, 'success');
 }
 
@@ -3432,7 +3423,7 @@ function saveTambahAdmin() {
   if (users.find(u => u.username === name)) { showToast('Username sudah digunakan!', 'error'); return; }
   users.push({ id: Date.now(), username: name, password: pass, role: 'admin', active: true, photo: '' });
   logActivity('Tambah Admin', `${name} ditambahkan sebagai admin oleh developer`);
-  save(); renderAll(); closeModal('modal-tambah-admin');
+  renderAll(); closeModal('modal-tambah-admin');
   showToast(`Admin "${name}" berhasil ditambahkan!`, 'success');
 }
 
@@ -3458,7 +3449,7 @@ function saveEditMember() {
   users[idx].jabatan = document.getElementById('em-jabatan').value;
   users[idx].status = document.getElementById('em-status').value;
   logActivity('Edit Member', `${name} — ${jabatanMeta(users[idx].jabatan).label} / ${users[idx].status}`);
-  save(); renderAll(); closeModal('modal-edit-member');
+  renderAll(); closeModal('modal-edit-member');
   showToast('Data anggota diperbarui!', 'success');
 }
 
@@ -3470,7 +3461,7 @@ function deleteUser(uid) {
   const u = users.find(x => x.id === uid);
   users = users.filter(u => u.id !== uid);
   logActivity('Hapus User', u ? u.username : `#${uid}`);
-  save(); renderAll();
+  renderAll();
   showToast('User dihapus.', 'warning');
 }
 
@@ -3511,7 +3502,7 @@ function executeDelete() {
     logActivity('Hapus Order', `#${String(_deleteTarget.id).padStart(4, '0')}`);
     showToast('Order dihapus.', 'warning');
   }
-  save(); renderAll(); closeConfirm();
+  renderAll(); closeConfirm();
 }
 
 // ════════════════════════════════════
