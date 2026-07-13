@@ -1967,13 +1967,24 @@ function uploadImageToStorage(file, folder) {
   });
 }
 
+// Kalau server belum sempat konfirmasi (misal sinyal HP putus-nyambung),
+// jangan bikin UI nyangkut selamanya — data tetap aman di antrian lokal
+// (offline persistence) dan akan tersinkron otomatis begitu koneksi pulih.
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise(resolve => setTimeout(() => resolve('timeout'), ms)),
+  ]);
+}
+
 function save() {
   if (!firebaseReady) return Promise.resolve();
-  return Promise.all([
+  const writePromise = Promise.all([
     usersDocRef.set({ list: users }).catch(showFirebaseError),
     productsDocRef.set({ list: products }).catch(showFirebaseError),
     panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories }).catch(showFirebaseError),
   ]);
+  return withTimeout(writePromise, 8000);
 }
 
 function logActivity(action, detail) {
@@ -2913,10 +2924,14 @@ async function saveProduct() {
     products.push({ id: nextProductId++, name, type, cat, buy, sell, stock, icon, img, desc });
   }
   try {
-    await logActivity(id ? 'Edit Produk' : 'Tambah Produk', `${name}`);
+    const result = await logActivity(id ? 'Edit Produk' : 'Tambah Produk', `${name}`);
     renderAll();
     closeModal('modal-product');
-    showToast(`Produk "${name}" disimpan!`, 'success');
+    if (result === 'timeout') {
+      showToast(`Produk "${name}" tersimpan lokal, menyusul sinkron ke server...`, 'warning');
+    } else {
+      showToast(`Produk "${name}" disimpan!`, 'success');
+    }
   } catch (err) {
     showFirebaseError(err);
   } finally {
