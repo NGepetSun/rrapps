@@ -2051,16 +2051,7 @@ function sendDiscordLog(entry) {
   if (entry.action === 'Buat Order') return; // order punya embed khusus, lihat sendDiscordOrderNotif()
   const payload = {
     username: state.bizName || 'Activity Log',
-    embeds: [{
-      title: `📋 ${entry.action}`,
-      description: entry.detail || '-',
-      color: 0x5865f2,
-      fields: [
-        { name: 'User', value: entry.user || '-', inline: true },
-        { name: 'Role', value: (entry.role || '-').toUpperCase(), inline: true },
-      ],
-      timestamp: entry.time,
-    }],
+    content: `👤 **${entry.user || '-'}** — ${entry.action}`,
   };
   fetch(discordWebhookUrl, {
     method: 'POST',
@@ -2948,7 +2939,7 @@ function renderCheckoutTable() {
 function buildInvSlot(p, admin) {
   const stockPct = Math.min(100, (p.stock / 50) * 100);
   const stockColor = p.stock === 0 ? 'var(--danger)' : p.stock < 10 ? 'var(--warning)' : 'var(--success)';
-  const imgContent = p.img ? `<img src="${p.img}" alt="${p.name}">` : `<span>${p.icon}</span>`;
+  const imgContent = p.img ? `<img src="${p.img}" alt="${p.name}" onerror="this.outerHTML='<span>${p.icon}</span>'">` : `<span>${p.icon}</span>`;
   const clickAction = p.stock > 0 ? `openMemberOrder(${p.id})` : '';
   const outTag = p.stock === 0 ? `<div class="inv-out-tag">HABIS</div>` : '';
   const adminOverlay = admin ? `<div class="inv-admin-overlay">
@@ -3199,7 +3190,7 @@ function openMemberOrder(pid) {
   document.getElementById('mo-name').textContent = p.name;
   document.getElementById('mo-price').textContent = fmt(p.sell) + ' / unit';
   const moImg = document.getElementById('mo-img');
-  moImg.innerHTML = p.img ? `<img src="${p.img}">` : `<span id="mo-icon">${p.icon}</span>`;
+  moImg.innerHTML = p.img ? `<img src="${p.img}" onerror="this.parentElement.innerHTML='<span id=&quot;mo-icon&quot;>${p.icon}</span>'">` : `<span id="mo-icon">${p.icon}</span>`;
   document.getElementById('member-order-title').textContent = '🛒 BELI — ' + p.name;
   document.getElementById('mo-qty').value = 1;
   document.getElementById('mo-note').value = '';
