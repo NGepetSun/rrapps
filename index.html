@@ -823,6 +823,29 @@
   .inv-admin-overlay button:hover{background:rgba(255,255,255,0.2);}
   .inv-admin-overlay button.danger:hover{background:var(--danger);}
 
+  .craft-picker-search{position:relative;margin-bottom:10px;}
+  .craft-picker-search input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:9px;padding:8px 10px 8px 30px;color:#fff;font-size:11.5px;}
+  .craft-picker-search input:focus{outline:none;border-color:var(--accent-blue);}
+  .craft-picker-search .cps-ic{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;opacity:.6;}
+  .craft-picker-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:220px;overflow-y:auto;padding-right:2px;margin-bottom:12px;}
+  .craft-picker-card{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:rgba(255,255,255,0.03);cursor:pointer;transition:transform .12s ease,border-color .15s ease,background .15s ease;}
+  .craft-picker-card:hover{border-color:rgba(255,255,255,0.28);background:rgba(255,255,255,0.06);}
+  .craft-picker-card.selected{border-color:var(--accent-teal,#4ad8a8);background:rgba(74,216,168,0.12);}
+  .craft-picker-card.disabled{opacity:.4;cursor:not-allowed;}
+  .craft-picker-img{width:34px;height:34px;border-radius:8px;background:#0e1220;display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden;flex-shrink:0;}
+  .craft-picker-img img{width:100%;height:100%;object-fit:cover;}
+  .craft-picker-info{flex:1;min-width:0;}
+  .craft-picker-name{font-size:10.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .craft-picker-stock{font-size:9px;color:var(--muted);font-family:var(--mono);}
+  .craft-picker-empty{grid-column:1/-1;text-align:center;padding:16px 8px;color:var(--muted);font-size:11px;}
+  .craft-sel-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:6px 8px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;background:rgba(255,255,255,0.03);}
+  .craft-sel-img{width:32px;height:32px;border-radius:7px;background:#0e1220;display:flex;align-items:center;justify-content:center;font-size:15px;overflow:hidden;flex-shrink:0;}
+  .craft-sel-img img{width:100%;height:100%;object-fit:cover;}
+  .craft-sel-info{flex:1;min-width:0;}
+  .craft-sel-name{font-size:10.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .craft-sel-qty{display:flex;align-items:center;gap:4px;}
+  .craft-sel-qty input{width:56px;text-align:center;}
+
   /* modals */
   .modal-overlay{position:fixed;inset:0;background:rgba(4,6,16,0.65);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;}
   .modal-overlay.open{display:flex;}
@@ -1426,17 +1449,21 @@
       </div>
       <div class="form-row single hidden" id="p-craft-toggle-wrap">
         <div class="form-group">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12.5px;color:#fff;font-weight:500">
-            <input type="checkbox" id="p-craft-enable" onchange="toggleCraftMode()" style="width:15px;height:15px">
-            🧩 Buat dari Bahan Baku (ambil dari Inventory, stok bahan otomatis berkurang)
-          </label>
+          <span style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#fff;font-weight:500">
+            🧩 Bahan Baku wajib diambil dari Inventory (Kategori Bahan Ammo)
+          </span>
         </div>
       </div>
       <div class="hidden" id="p-craft-section" style="border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px 14px;margin-bottom:14px;background:rgba(255,255,255,0.03)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px">
-          <span style="font-size:10.5px;color:var(--muted)">Pilih barang dari inventory sebagai bahan. Jika stok bahan tidak cukup, produk tidak bisa disimpan.</span>
-          <button type="button" class="btn btn-outline btn-sm" style="white-space:nowrap" onclick="addCraftRow()">➕ Tambah Bahan</button>
+        <div style="margin-bottom:10px">
+          <span style="font-size:10.5px;color:var(--muted)">Pilih minimal satu bahan dari kategori Bahan Ammo di Inventory. Stok bahan otomatis berkurang & barang/stok baru tidak bisa disimpan tanpa bahan baku.</span>
         </div>
+        <div class="craft-picker-search">
+          <span class="cps-ic">🔍</span>
+          <input type="text" id="p-craft-search" placeholder="Cari bahan ammo..." oninput="renderCraftPicker()">
+        </div>
+        <div class="craft-picker-grid" id="p-craft-picker"></div>
+        <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px" id="p-craft-sel-label">Bahan Dipilih</div>
         <div id="p-craft-rows"></div>
         <div class="form-row" style="margin-top:4px">
           <div class="form-group">
@@ -3430,9 +3457,8 @@ function updateCatOptions(presetCat) {
     craftToggleWrap.classList.remove('hidden');
   } else {
     craftToggleWrap.classList.add('hidden');
-    document.getElementById('p-craft-enable').checked = false;
-    toggleCraftMode();
   }
+  toggleCraftMode();
 }
 
 // ════════════════════════════════════
@@ -3440,27 +3466,43 @@ function updateCatOptions(presetCat) {
 //  Barang baru diambil/dirakit dari barang lain yang sudah ada
 //  di inventory. Stok bahan otomatis berkurang & modal dihitung otomatis.
 // ════════════════════════════════════
-let craftRowSeq = 0;
+// Peta bahan terpilih: pid -> qtyPerUnit. Dipertahankan lintas render supaya
+// pencarian/filter di picker tidak menghapus bahan yang sudah dipilih.
+let craftSelected = new Map();
 
 function resetCraftState() {
-  craftRowSeq = 0;
-  document.getElementById('p-craft-enable').checked = false;
+  craftSelected = new Map();
+  document.getElementById('p-craft-search').value = '';
   document.getElementById('p-craft-rows').innerHTML = '';
   document.getElementById('p-craft-qty').value = 1;
   document.getElementById('p-craft-total').value = '';
   toggleCraftMode();
 }
 
+// Bahan baku hanya boleh diambil dari Inventory kategori "Bahan Ammo"
+// (kategori custom di illegalCategories, BUKAN kategori bawaan "Amunisi"/cat==='ammo').
+function getBahanAmmoCategory() {
+  return illegalCategories.find(c => (c.label || '').trim().toLowerCase() === 'bahan ammo')
+    || illegalCategories.find(c => (c.value || '').trim().toLowerCase() === 'bahan_ammo');
+}
+function getAmmoMaterialPool() {
+  const editId = parseInt(document.getElementById('p-edit-id').value) || null;
+  const bahanCat = getBahanAmmoCategory();
+  if (!bahanCat) return [];
+  return products.filter(p => p.cat === bahanCat.value && (!editId || p.id !== editId));
+}
+
 function toggleCraftMode() {
-  const enabled = document.getElementById('p-craft-enable').checked;
+  const type = document.getElementById('p-type').value;
   const section = document.getElementById('p-craft-section');
   const buyInput = document.getElementById('p-buy');
   const stockInput = document.getElementById('p-stock');
-  if (enabled) {
+  if (type === 'biz') {
     section.classList.remove('hidden');
-    if (!document.getElementById('p-craft-rows').children.length) addCraftRow();
     buyInput.readOnly = true; buyInput.style.opacity = '.75'; buyInput.style.cursor = 'not-allowed';
     stockInput.readOnly = true; stockInput.style.opacity = '.75'; stockInput.style.cursor = 'not-allowed';
+    renderCraftPicker();
+    renderCraftSelected();
     recalcCraft();
   } else {
     section.classList.add('hidden');
@@ -3469,78 +3511,115 @@ function toggleCraftMode() {
   }
 }
 
-function craftMaterialOptionsHtml(selectedId) {
-  const editId = parseInt(document.getElementById('p-edit-id').value) || null;
-  const list = products.filter(p => !editId || p.id !== editId);
-  let html = '<option value="">-- Pilih Barang --</option>';
-  list.forEach(p => {
-    const sel = p.id === selectedId ? 'selected' : '';
-    html += `<option value="${p.id}" ${sel}>${p.icon || '📦'} ${p.name} — ${p.type === 'biz' ? 'Bisnis' : 'Brangkas'}/${p.cat} (stok:${p.stock}, modal:${fmt(p.buy)})</option>`;
-  });
-  return html;
+// Grid pencarian bahan — kartu bergambar (kolom kiri = gambar, kolom kanan = info),
+// diklik untuk menambah/menghapus dari daftar bahan terpilih.
+function renderCraftPicker() {
+  const grid = document.getElementById('p-craft-picker');
+  if (!grid) return;
+  const q = (document.getElementById('p-craft-search').value || '').trim().toLowerCase();
+  const pool = getAmmoMaterialPool().filter(p => !q || p.name.toLowerCase().includes(q));
+  if (!pool.length) {
+    grid.innerHTML = '<div class="craft-picker-empty">🎯 Tidak ada bahan (kategori Bahan Ammo) ditemukan di Inventory</div>';
+    return;
+  }
+  grid.innerHTML = pool.map(p => {
+    const isSel = craftSelected.has(p.id);
+    const habis = p.stock <= 0;
+    const imgHtml = p.img ? `<img src="${p.img}">` : (p.icon || '🎯');
+    return `
+      <div class="craft-picker-card ${isSel ? 'selected' : ''} ${habis ? 'disabled' : ''}" onclick="${habis ? '' : `toggleCraftMaterial(${p.id})`}">
+        <div class="craft-picker-img">${imgHtml}</div>
+        <div class="craft-picker-info">
+          <div class="craft-picker-name">${isSel ? '✅ ' : ''}${p.name}</div>
+          <div class="craft-picker-stock">Stok: ${p.stock}${habis ? ' (habis)' : ''} • ${fmt(p.buy)}</div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
-function addCraftRow() {
-  craftRowSeq++;
-  const rowId = craftRowSeq;
-  const wrap = document.getElementById('p-craft-rows');
-  const div = document.createElement('div');
-  div.className = 'craft-row';
-  div.dataset.rowId = rowId;
-  div.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap';
-  div.innerHTML = `
-    <select class="form-select craft-mat-select" style="flex:2;min-width:180px" onchange="recalcCraft()">${craftMaterialOptionsHtml(null)}</select>
-    <input class="form-input craft-mat-qty" type="number" min="1" value="1" style="flex:0 0 90px" placeholder="Qty/unit" oninput="recalcCraft()">
-    <span class="craft-mat-info" style="flex:1 1 160px;font-size:10.5px;color:var(--muted)"></span>
-    <button type="button" class="btn btn-outline btn-sm" onclick="removeCraftRow(${rowId})">🗑</button>
-  `;
-  wrap.appendChild(div);
+function toggleCraftMaterial(pid) {
+  if (craftSelected.has(pid)) {
+    craftSelected.delete(pid);
+  } else {
+    craftSelected.set(pid, 1);
+  }
+  renderCraftPicker();
+  renderCraftSelected();
   recalcCraft();
 }
 
-function removeCraftRow(rowId) {
-  const wrap = document.getElementById('p-craft-rows');
-  const row = wrap.querySelector(`.craft-row[data-row-id="${rowId}"]`);
-  if (row) row.remove();
-  if (!wrap.children.length) addCraftRow();
-  else recalcCraft();
+function updateCraftQty(pid, qty) {
+  const v = Math.max(1, parseInt(qty) || 1);
+  craftSelected.set(pid, v);
+  recalcCraft();
 }
 
-// Kumpulkan bahan yang dipilih user di form, digabung (summed) per barang.
-// Mengembalikan array {product, qtyPerUnit} — product bisa null kalau belum dipilih.
-function getCraftMaterialsFromForm() {
-  const rows = document.querySelectorAll('#p-craft-rows .craft-row');
-  const map = new Map();
-  rows.forEach(row => {
-    const pid = parseInt(row.querySelector('.craft-mat-select').value);
-    const qty = parseInt(row.querySelector('.craft-mat-qty').value) || 0;
-    if (!pid || qty <= 0) return;
-    map.set(pid, (map.get(pid) || 0) + qty);
+function removeCraftMaterial(pid) {
+  craftSelected.delete(pid);
+  renderCraftPicker();
+  renderCraftSelected();
+  recalcCraft();
+}
+
+// Daftar bahan yang sudah dipilih user, ditampilkan dengan gambar + kontrol qty.
+function renderCraftSelected() {
+  const wrap = document.getElementById('p-craft-rows');
+  const label = document.getElementById('p-craft-sel-label');
+  if (!wrap) return;
+  if (!craftSelected.size) {
+    wrap.innerHTML = '<div style="font-size:10.5px;color:var(--muted);padding:4px 0 8px">Belum ada bahan dipilih — klik salah satu kartu Bahan Ammo di atas.</div>';
+    if (label) label.textContent = 'Bahan Dipilih';
+    return;
+  }
+  if (label) label.textContent = `Bahan Dipilih (${craftSelected.size})`;
+  const rows = [];
+  craftSelected.forEach((qty, pid) => {
+    const p = products.find(x => x.id === pid);
+    if (!p) { craftSelected.delete(pid); return; }
+    const imgHtml = p.img ? `<img src="${p.img}">` : (p.icon || '🎯');
+    rows.push(`
+      <div class="craft-sel-row" data-pid="${pid}">
+        <div class="craft-sel-img">${imgHtml}</div>
+        <div class="craft-sel-info">
+          <div class="craft-sel-name">${p.name}</div>
+          <div class="craft-mat-info" style="font-size:9.5px;color:var(--muted)" id="craft-info-${pid}"></div>
+        </div>
+        <div class="craft-sel-qty">
+          <span style="font-size:9.5px;color:var(--muted)">Qty/unit</span>
+          <input class="form-input" type="number" min="1" value="${qty}" oninput="updateCraftQty(${pid}, this.value)">
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="removeCraftMaterial(${pid})">🗑</button>
+      </div>`);
   });
+  wrap.innerHTML = rows.join('');
+}
+
+// Kumpulkan bahan yang dipilih user, mengembalikan array {product, qtyPerUnit}.
+function getCraftMaterialsFromForm() {
   const result = [];
-  map.forEach((qtyPerUnit, pid) => {
-    result.push({ product: products.find(p => p.id === pid) || null, qtyPerUnit, pid });
+  craftSelected.forEach((qtyPerUnit, pid) => {
+    const p = products.find(x => x.id === pid);
+    if (p && qtyPerUnit > 0) result.push({ product: p, qtyPerUnit, pid });
   });
   return result;
 }
 
 function recalcCraft() {
-  if (!document.getElementById('p-craft-enable').checked) return;
+  const type = document.getElementById('p-type').value;
+  if (type !== 'biz') return;
   const jumlah = Math.max(1, parseInt(document.getElementById('p-craft-qty').value) || 1);
   let totalModal = 0;
-  document.querySelectorAll('#p-craft-rows .craft-row').forEach(row => {
-    const sel = row.querySelector('.craft-mat-select');
-    const qtyInput = row.querySelector('.craft-mat-qty');
-    const info = row.querySelector('.craft-mat-info');
-    const pid = parseInt(sel.value);
-    const qty = parseInt(qtyInput.value) || 0;
+  craftSelected.forEach((qty, pid) => {
     const p = products.find(x => x.id === pid);
-    if (!p) { info.textContent = ''; info.style.color = 'var(--muted)'; return; }
+    const info = document.getElementById(`craft-info-${pid}`);
+    if (!p) return;
     const needed = qty * jumlah;
     totalModal += p.buy * qty;
     const cukup = p.stock >= needed;
-    info.textContent = `Butuh ${needed} • Tersedia ${p.stock}${cukup ? '' : ' — STOK KURANG!'}`;
-    info.style.color = cukup ? 'var(--muted)' : 'var(--danger)';
+    if (info) {
+      info.textContent = `Butuh ${needed} • Tersedia ${p.stock}${cukup ? '' : ' — STOK KURANG!'}`;
+      info.style.color = cukup ? 'var(--muted)' : 'var(--danger)';
+    }
   });
   const perUnit = Math.round(totalModal / jumlah);
   document.getElementById('p-buy').value = perUnit;
@@ -3632,8 +3711,8 @@ async function saveProduct() {
   const desc = document.getElementById('p-desc').value.trim();
   if (!name) { showToast('Nama produk harus diisi!', 'error'); return; }
 
-  // ── Validasi & proses Bahan Baku (Craft), kalau diaktifkan ──
-  const craftEnabled = type === 'biz' && document.getElementById('p-craft-enable').checked;
+  // ── Validasi & proses Bahan Baku (Craft) — wajib untuk semua produk Bisnis ──
+  const craftEnabled = type === 'biz';
   let craftMaterials = [];
   let craftJumlah = 0;
   let craftTotalModal = 0;
@@ -3642,7 +3721,7 @@ async function saveProduct() {
     craftJumlah = Math.max(1, parseInt(document.getElementById('p-craft-qty').value) || 1);
     craftMaterials = getCraftMaterialsFromForm();
     if (!craftMaterials.length) {
-      showToast('Pilih minimal satu bahan baku, atau matikan mode Bahan Baku!', 'error');
+      showToast('Pilih minimal satu bahan baku dari kategori Bahan Ammo di Inventory dulu!', 'error');
       return;
     }
     for (const m of craftMaterials) {
