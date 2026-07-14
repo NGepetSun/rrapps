@@ -879,9 +879,7 @@
 </head>
 <body>
 <!-- Firebase SDK (compat) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <!-- ================= LOADING OVERLAY ================= -->
 <div id="loadingOverlay">
@@ -1870,34 +1868,23 @@
 // ════════════════════════════════════
 //  FIREBASE
 // ════════════════════════════════════
-const firebaseConfig = {
-  apiKey: "AIzaSyCtnyQHHjFbqSoJeilvcdbRjhxfzrN9pkM",
-  authDomain: "rapps-15ccc.firebaseapp.com",
-  projectId: "rapps-15ccc",
-  storageBucket: "rapps-15ccc.firebasestorage.app",
-  messagingSenderId: "1062924109143",
-  appId: "1:1062924109143:web:c7288761abf68f9069ea12",
-  measurementId: "G-P2B2RBHFJP"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const storage = firebase.storage();
+const SUPABASE_URL = "https://zhtemsgsgmvfjloppdhx.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_0MjLm_WByrfbLvENUQxjxw_0QoLa85H";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const STORAGE_BUCKET = 'images';
 
-// Aktifkan offline persistence: perubahan disimpan dulu ke IndexedDB lokal,
-// lalu dikirim ke server begitu ada koneksi — jadi kalau HP di-refresh
-// atau sinyal lambat, data yang baru ditambah tetap aman & terkirim otomatis.
-db.enablePersistence({ synchronizeTabs: true }).catch(err => {
-  console.warn('Firestore persistence gagal aktif:', err.code);
-  // 'failed-precondition' = ada tab lain yang lebih dulu aktifkan (aman, diabaikan)
-  // 'unimplemented' = browser tidak support (misal mode incognito lama)
-});
-
-// Docs: users & products get their own doc (they hold base64 photos/images,
-// kept isolated so one doc doesn't bloat past Firestore's 1MB doc limit).
-// Everything else (small, no images) lives together in one "panel" doc.
-const usersDocRef = db.collection('java_panel').doc('users');
-const productsDocRef = db.collection('java_panel').doc('products');
-const panelDocRef = db.collection('java_panel').doc('panel');
+// Tabel java_panel: 1 baris per key ('users', 'products', 'panel'), datanya
+// disimpan sebagai JSON di kolom `data` — mirip struktur dokumen Firestore
+// sebelumnya, supaya logika baca/tulis di bawah tidak perlu dirombak total.
+async function sbGetRow(key) {
+  const { data, error } = await sb.from('java_panel').select('data').eq('key', key).maybeSingle();
+  if (error) throw error;
+  return data ? data.data : null;
+}
+async function sbSetRow(key, value) {
+  const { error } = await sb.from('java_panel').upsert({ key, data: value, updated_at: new Date().toISOString() });
+  if (error) throw error;
+}
 
 // ════════════════════════════════════
 //  STATE
@@ -2054,18 +2041,18 @@ window.addEventListener('error', e => {
 
 async function initFirebaseData() {
   try {
-    const [uSnap, pSnap, panelSnap] = await Promise.all([
-      usersDocRef.get(), productsDocRef.get(), panelDocRef.get()
+    const [uData, pData, panelData] = await Promise.all([
+      sbGetRow('users'), sbGetRow('products'), sbGetRow('panel')
     ]);
 
-    users = uSnap.exists ? (uSnap.data().list || []) : DEFAULT_USERS.slice();
-    if (!uSnap.exists) await usersDocRef.set({ list: users });
+    users = uData ? (uData.list || []) : DEFAULT_USERS.slice();
+    if (!uData) await sbSetRow('users', { list: users });
 
-    products = pSnap.exists ? (pSnap.data().list || []) : DEFAULT_PRODUCTS.slice();
-    if (!pSnap.exists) await productsDocRef.set({ list: products });
+    products = pData ? (pData.list || []) : DEFAULT_PRODUCTS.slice();
+    if (!pData) await sbSetRow('products', { list: products });
 
-    if (panelSnap.exists) {
-      const d = panelSnap.data();
+    if (panelData) {
+      const d = panelData;
       orders = d.orders || [];
       setorItems = d.setorItems || DEFAULT_SETOR_ITEMS.slice();
       setoran = d.setoran || [];
@@ -2089,7 +2076,7 @@ async function initFirebaseData() {
       discordLogWebhookEnabled = false;
       discordOrderWebhookUrl = '';
       discordOrderWebhookEnabled = false;
-      await panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories, checkoutHiddenCats, discordLogWebhookUrl, discordLogWebhookEnabled, discordOrderWebhookUrl, discordOrderWebhookEnabled });
+      await sbSetRow('panel', { orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories, checkoutHiddenCats, discordLogWebhookUrl, discordLogWebhookEnabled, discordOrderWebhookUrl, discordOrderWebhookEnabled });
     }
 
     migrateUsers();
@@ -2100,41 +2087,41 @@ async function initFirebaseData() {
     document.getElementById('loadingOverlay').classList.add('hidden');
     document.getElementById('loginPage').classList.remove('hidden');
 
-    // Real-time listeners: kalau user lain mengubah data, semua sesi lain update otomatis
-    usersDocRef.onSnapshot(snap => {
-      if (!snap.exists) return;
-      users = snap.data().list || [];
-      migrateUsers();
-      if (state.currentUser) {
-        const me = users.find(x => x.id === state.currentUser.id);
-        if (me) state.currentUser = me;
-      }
-      renderAll();
-    }, showFirebaseError);
+    // Real-time: kalau sesi lain mengubah data, sesi ini update otomatis lewat Supabase Realtime.
+    sb.channel('java_panel-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'java_panel' }, payload => {
+        const row = payload.new;
+        if (!row || !row.key) return;
+        const d = row.data || {};
 
-    productsDocRef.onSnapshot(snap => {
-      if (!snap.exists) return;
-      products = snap.data().list || [];
-      renderAll();
-    }, showFirebaseError);
-
-    panelDocRef.onSnapshot(snap => {
-      if (!snap.exists) return;
-      const d = snap.data();
-      orders = d.orders || [];
-      setorItems = d.setorItems || setorItems;
-      setoran = d.setoran || [];
-      dataSheets = d.dataSheets ? deserializeDataSheets(d.dataSheets) : dataSheets;
-      activityLog = d.activityLog || [];
-      illegalCategories = (d.illegalCategories && d.illegalCategories.length) ? d.illegalCategories : illegalCategories;
-      checkoutHiddenCats = d.checkoutHiddenCats || checkoutHiddenCats;
-      discordLogWebhookUrl = (d.discordLogWebhookUrl !== undefined) ? d.discordLogWebhookUrl : discordLogWebhookUrl;
-      discordLogWebhookEnabled = (d.discordLogWebhookEnabled !== undefined) ? !!d.discordLogWebhookEnabled : discordLogWebhookEnabled;
-      discordOrderWebhookUrl = (d.discordOrderWebhookUrl !== undefined) ? d.discordOrderWebhookUrl : discordOrderWebhookUrl;
-      discordOrderWebhookEnabled = (d.discordOrderWebhookEnabled !== undefined) ? !!d.discordOrderWebhookEnabled : discordOrderWebhookEnabled;
-      renderDiscordWebhookSettings();
-      renderAll();
-    }, showFirebaseError);
+        if (row.key === 'users') {
+          users = d.list || [];
+          migrateUsers();
+          if (state.currentUser) {
+            const me = users.find(x => x.id === state.currentUser.id);
+            if (me) state.currentUser = me;
+          }
+          renderAll();
+        } else if (row.key === 'products') {
+          products = d.list || [];
+          renderAll();
+        } else if (row.key === 'panel') {
+          orders = d.orders || [];
+          setorItems = d.setorItems || setorItems;
+          setoran = d.setoran || [];
+          dataSheets = d.dataSheets ? deserializeDataSheets(d.dataSheets) : dataSheets;
+          activityLog = d.activityLog || [];
+          illegalCategories = (d.illegalCategories && d.illegalCategories.length) ? d.illegalCategories : illegalCategories;
+          checkoutHiddenCats = d.checkoutHiddenCats || checkoutHiddenCats;
+          discordLogWebhookUrl = (d.discordLogWebhookUrl !== undefined) ? d.discordLogWebhookUrl : discordLogWebhookUrl;
+          discordLogWebhookEnabled = (d.discordLogWebhookEnabled !== undefined) ? !!d.discordLogWebhookEnabled : discordLogWebhookEnabled;
+          discordOrderWebhookUrl = (d.discordOrderWebhookUrl !== undefined) ? d.discordOrderWebhookUrl : discordOrderWebhookUrl;
+          discordOrderWebhookEnabled = (d.discordOrderWebhookEnabled !== undefined) ? !!d.discordOrderWebhookEnabled : discordOrderWebhookEnabled;
+          renderDiscordWebhookSettings();
+          renderAll();
+        }
+      })
+      .subscribe();
 
   } catch (err) {
     showFirebaseError(err);
@@ -2315,30 +2302,23 @@ function uploadImageToStorage(file, folder, onProgress) {
       finish(reject, new Error('Upload timeout, koneksi/proses terlalu lambat. Coba lagi.'));
     }, UPLOAD_TIMEOUT_MS);
 
-    const doUpload = finalFile => {
-      let ref, task;
+    const doUpload = async finalFile => {
       try {
         const safeName = Date.now() + '_' + finalFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        ref = storage.ref().child(`${folder}/${safeName}`);
-        task = ref.put(finalFile);
+        const path = `${folder}/${safeName}`;
+        if (onProgress) onProgress(50); // Supabase JS belum kasih progress event granular saat upload
+        const { error: upErr } = await sb.storage.from(STORAGE_BUCKET).upload(path, finalFile, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: finalFile.type || 'image/jpeg',
+        });
+        if (upErr) { finish(reject, upErr); return; }
+        if (onProgress) onProgress(100);
+        const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+        finish(resolve, data.publicUrl);
       } catch (err) {
         finish(reject, err);
-        return;
       }
-      task.on('state_changed', snap => {
-        if (onProgress && snap.totalBytes) {
-          onProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100));
-        }
-      }, err => {
-        finish(reject, err);
-      }, async () => {
-        try {
-          const url = await task.snapshot.ref.getDownloadURL();
-          finish(resolve, url);
-        } catch (err) {
-          finish(reject, err);
-        }
-      });
     };
 
     // Kompresi dikasih batas 8 detik — kalau proses kompresi macet/error di browser tertentu
@@ -2364,9 +2344,9 @@ function withTimeout(promise, ms) {
 function save() {
   if (!firebaseReady) return Promise.resolve();
   const writePromise = Promise.all([
-    usersDocRef.set({ list: users }).catch(showFirebaseError),
-    productsDocRef.set({ list: products }).catch(showFirebaseError),
-    panelDocRef.set({ orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories, checkoutHiddenCats, discordLogWebhookUrl, discordLogWebhookEnabled, discordOrderWebhookUrl, discordOrderWebhookEnabled }).catch(showFirebaseError),
+    sbSetRow('users', { list: users }).catch(showFirebaseError),
+    sbSetRow('products', { list: products }).catch(showFirebaseError),
+    sbSetRow('panel', { orders, setorItems, setoran, dataSheets: serializeDataSheets(dataSheets), activityLog, illegalCategories, checkoutHiddenCats, discordLogWebhookUrl, discordLogWebhookEnabled, discordOrderWebhookUrl, discordOrderWebhookEnabled }).catch(showFirebaseError),
   ]);
   return withTimeout(writePromise, 8000);
 }
