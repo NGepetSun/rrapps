@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RR APPS | Business Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
@@ -25,6 +25,7 @@
     --magenta:#f7d9b0;
     --mono:'Share Tech Mono',monospace;
     --display:'Chakra Petch',sans-serif;
+    --display-heavy:'Plus Jakarta Sans',sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html{background:var(--navy);}
@@ -363,16 +364,20 @@
     display:flex;
     align-items:center;
     justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
   }
   .stat-header h2{
-    font-family:var(--display);
+    font-family:var(--display-heavy);
     color:#fff;
-    font-size:17px;
-    font-weight:600;
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:-.3px;
   }
-  .stat-tabs{display:flex;gap:16px;font-size:12px;}
-  .stat-tabs span{color:var(--muted);cursor:pointer;padding-bottom:4px;}
-  .stat-tabs span.active{color:#fff;border-bottom:2px solid #4ad8a8;}
+  .stat-tabs{display:flex;gap:4px;font-size:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);padding:4px;border-radius:11px;}
+  .stat-tabs span{color:var(--muted);cursor:pointer;padding:7px 14px;border-radius:8px;font-weight:700;letter-spacing:.2px;transition:all .15s ease;}
+  .stat-tabs span:hover{color:#fff;}
+  .stat-tabs span.active{color:#0b1030;background:linear-gradient(135deg,#4ad8a8,#5aa0e0);box-shadow:0 4px 12px rgba(74,216,168,0.25);}
 
   /* ---- HERO REVENUE (split bisnis vs ilegal) ---- */
   .hero-revenue{
@@ -388,7 +393,7 @@
   }
   .hero-top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:16px;}
   .hero-label{font-size:10.5px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
-  .hero-amount{font-family:var(--display);font-size:34px;font-weight:700;color:#fff;letter-spacing:-.5px;}
+  .hero-amount{font-family:var(--display-heavy);font-size:36px;font-weight:800;color:#fff;letter-spacing:-.6px;font-variant-numeric:tabular-nums;}
   .hero-legend{display:flex;gap:20px;}
   .legend-item{font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;gap:3px;}
   .legend-item .lbl{display:flex;align-items:center;gap:6px;}
@@ -431,12 +436,15 @@
   .stat-cards-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;}
   .mini-card{
     flex:1;
-    background:rgba(255,255,255,0.04);
+    background:linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.07);
     border-radius:14px;
     padding:16px 18px;
     position:relative;
     overflow:hidden;
+    transition:transform .18s ease, border-color .18s ease;
   }
+  .mini-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,0.14);}
   .mini-card::after{
     content:'';
     position:absolute; top:0; right:0;
@@ -450,8 +458,9 @@
     align-items:center;
     gap:6px;
     font-size:11.5px;
+    font-weight:700;
     color:var(--muted);
-    margin-bottom:8px;
+    margin-bottom:9px;
     position:relative;
   }
   .mini-card .bar{width:3px;height:12px;border-radius:2px;}
@@ -466,10 +475,11 @@
   .mini-card.stockcrit{--mc-glow:rgba(90,160,224,0.18);}
   .mini-card.stockcrit .bar{background:#5aa0e0;}
   .mini-card .amount{
-    font-family:var(--display);
-    font-size:19px;
+    font-family:var(--display-heavy);
+    font-size:21px;
     color:#fff;
-    font-weight:700;
+    font-weight:800;
+    letter-spacing:-.2px;
     position:relative;
   }
   .mini-card .delta{font-size:10.5px;margin-top:5px;position:relative;color:var(--muted);}
@@ -481,20 +491,22 @@
   .mini-card.stockcrit .delta{color:#5aa0e0;}
 
   .payment-card{
-    background:rgba(255,255,255,0.04);
+    background:linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.07);
     border-radius:16px;
-    padding:18px 20px;
+    padding:19px 20px;
   }
   .payment-card h3{
     color:#fff;
-    font-size:14px;
-    font-weight:600;
-    margin-bottom:14px;
+    font-size:15.5px;
+    font-weight:800;
+    font-family:var(--display-heavy);
+    margin-bottom:16px;
     display:flex;
     justify-content:space-between;
     align-items:center;
   }
-  .payment-card h3 a{font-size:11px;color:var(--accent-blue);text-decoration:none;font-weight:500;cursor:pointer;}
+  .payment-card h3 a{font-size:11.5px;color:var(--accent-blue);text-decoration:none;font-weight:700;cursor:pointer;}
   .payment-row{
     display:flex;
     align-items:center;
@@ -526,15 +538,28 @@
   .gstat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
   .gstat-card{
     position:relative;
-    background:rgba(255,255,255,0.04);
-    border-radius:14px;
-    padding:18px 18px 16px 18px;
+    background:linear-gradient(160deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.07);
+    border-radius:16px;
+    padding:19px 19px 17px 19px;
     overflow:hidden;
+    transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .gstat-card:hover{
+    transform:translateY(-3px);
+    border-color:rgba(255,255,255,0.14);
+    box-shadow:0 14px 28px -12px rgba(0,0,0,0.45);
   }
   .gstat-card::before{
     content:'';
     position:absolute; top:0; left:0; right:0; height:3px;
     background:linear-gradient(90deg,var(--gc1),var(--gc2));
+  }
+  .gstat-card::after{
+    content:'';
+    position:absolute; top:-30px; right:-30px; width:90px; height:90px; border-radius:50%;
+    background:radial-gradient(circle, var(--gc1) 0%, transparent 70%);
+    opacity:.14; pointer-events:none;
   }
   .gstat-card.c-blue{--gc1:#5aa0e0;--gc2:#7b6ee0;}
   .gstat-card.c-green{--gc1:#4ad8a8;--gc2:#2fae86;}
@@ -543,8 +568,15 @@
   .gstat-card.c-teal{--gc1:#4ad8a8;--gc2:#5aa0e0;}
   .gstat-card.c-skyblue{--gc1:#5aa0e0;--gc2:#4ad8a8;}
   .gstat-card.c-red{--gc1:#e0637a;--gc2:#c0405a;}
-  .gstat-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
-  .gstat-amount{font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:-.3px;}
+  .gstat-top{display:flex;align-items:center;gap:9px;margin-bottom:14px;position:relative;}
+  .gstat-icon{
+    width:30px;height:30px;border-radius:9px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:14px;
+    background:linear-gradient(135deg, var(--gc1), var(--gc2));
+    box-shadow:0 4px 10px -3px var(--gc1);
+  }
+  .gstat-label{font-size:10.5px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-weight:700;}
+  .gstat-amount{font-family:var(--display-heavy);font-size:26px;font-weight:800;letter-spacing:-.4px;font-variant-numeric:tabular-nums;position:relative;}
   .gstat-card.c-blue .gstat-amount{color:var(--gc1);}
   .gstat-card.c-green .gstat-amount{color:var(--gc1);}
   .gstat-card.c-purple .gstat-amount{color:var(--gc1);}
@@ -552,40 +584,43 @@
   .gstat-card.c-teal .gstat-amount{color:var(--gc1);}
   .gstat-card.c-skyblue .gstat-amount{color:#fff;}
   .gstat-card.c-red .gstat-amount{color:var(--gc1);}
-  .gstat-sub{font-size:10.5px;color:var(--muted);margin-top:7px;}
+  .gstat-sub{font-size:11px;color:var(--muted);margin-top:8px;font-weight:500;position:relative;}
 
   /* ---- TWO COLUMN: bar chart + status transaksi ---- */
   .ov-split-row{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:stretch;}
-  .ov-panel{background:rgba(255,255,255,0.04);border-radius:16px;padding:18px 20px;}
-  .ov-panel-title{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#fff;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:18px;}
-  .ov-panel-title .dot{width:7px;height:7px;border-radius:50%;background:var(--accent-blue);display:inline-block;}
+  .ov-panel{background:linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:19px 20px;}
+  .ov-panel-title{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#fff;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin-bottom:20px;font-family:var(--display-heavy);}
+  .ov-panel-title .dot{width:7px;height:7px;border-radius:50%;background:var(--accent-blue);display:inline-block;box-shadow:0 0 8px var(--accent-blue);}
 
-  .barchart-wrap{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;height:140px;}
-  .barchart-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:8px;}
-  .barchart-bar{width:100%;max-width:34px;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,#c0405a,#7a2f45);min-height:4px;transition:height .4s ease;}
-  .barchart-bar.biz{background:linear-gradient(180deg,#4ad8a8,#2a7a5e);}
-  .barchart-col.today .barchart-bar{background:transparent;border:2px solid var(--accent-blue);}
-  .barchart-xlabel{font-size:10px;color:var(--muted);letter-spacing:.5px;}
+  .barchart-wrap{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;height:150px;padding-top:22px;}
+  .barchart-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:9px;position:relative;}
+  .barchart-val{font-size:9.5px;font-weight:700;color:var(--muted);white-space:nowrap;font-family:var(--display-heavy);}
+  .barchart-col.today .barchart-val{color:var(--accent-blue);}
+  .barchart-bar{width:100%;max-width:30px;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,#e0637a,#7a2f45);min-height:5px;transition:height .5s cubic-bezier(.34,1.4,.64,1);box-shadow:0 2px 8px -2px rgba(224,99,122,0.4);}
+  .barchart-bar.biz{background:linear-gradient(180deg,#4ad8a8,#2a7a5e);box-shadow:0 2px 8px -2px rgba(74,216,168,0.4);}
+  .barchart-col.today .barchart-bar{background:linear-gradient(180deg,#7b6ee0,#5aa0e0);box-shadow:0 0 14px -2px var(--accent-blue);}
+  .barchart-xlabel{font-size:10px;color:var(--muted);letter-spacing:.5px;font-weight:700;}
+  .barchart-col.today .barchart-xlabel{color:#fff;}
 
   /* ── Split detail Bisnis vs Brangkas & Rekap Bulanan ── */
   .rekap-section-title{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin:20px 0 12px 0;color:#fff;}
   .rekap-section-title .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
 
-  .statlist-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-left:3px solid var(--sl-color,var(--accent-blue));padding-left:12px;margin-bottom:4px;}
+  .statlist-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0 14px 14px;border-left:3px solid var(--sl-color,var(--accent-blue));border-radius:0 8px 8px 0;background:linear-gradient(90deg, color-mix(in srgb, var(--sl-color,var(--accent-blue)) 8%, transparent), transparent);margin-bottom:4px;}
   .statlist-row + .statlist-row{border-top:1px solid rgba(255,255,255,0.06);}
-  .statlist-name{color:#fff;font-size:13.5px;font-weight:600;}
-  .statlist-sub{color:var(--muted);font-size:10px;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
-  .statlist-count{color:#fff;font-family:var(--display);font-size:20px;font-weight:700;}
+  .statlist-name{color:#fff;font-size:14px;font-weight:700;}
+  .statlist-sub{color:var(--muted);font-size:10px;letter-spacing:.5px;text-transform:uppercase;margin-top:3px;font-weight:600;}
+  .statlist-count{color:#fff;font-family:var(--display-heavy);font-size:22px;font-weight:800;margin-right:2px;}
   .statlist-rate{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);}
-  .statlist-rate-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
-  .statlist-rate-val{font-family:var(--display);font-size:19px;font-weight:700;color:#f7b955;}
+  .statlist-rate-label{font-size:10.5px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-weight:700;}
+  .statlist-rate-val{font-family:var(--display-heavy);font-size:21px;font-weight:800;color:#f7b955;}
 
   .tx-table{width:100%;border-collapse:collapse;}
-  .tx-table th{text-align:left;font-size:9.5px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:0 10px 12px 10px;font-weight:600;}
-  .tx-table td{padding:12px 10px;font-size:12.5px;color:#fff;border-top:1px solid rgba(255,255,255,0.06);}
-  .tx-table tr:hover td{background:rgba(255,255,255,0.02);}
-  .tx-name{font-weight:700;}
-  .tx-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;padding:4px 10px;border-radius:20px;}
+  .tx-table th{text-align:left;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:0 10px 13px 10px;font-weight:800;}
+  .tx-table td{padding:13px 10px;font-size:13px;color:#fff;border-top:1px solid rgba(255,255,255,0.06);font-weight:500;}
+  .tx-table tr:hover td{background:rgba(255,255,255,0.03);}
+  .tx-name{font-weight:800;}
+  .tx-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:20px;}
   .tx-badge.ok{background:rgba(74,216,168,0.15);color:#4ad8a8;}
   .tx-badge.proc{background:rgba(247,185,85,0.15);color:#f7b955;}
   .tx-badge.bad{background:rgba(224,99,122,0.15);color:#e0637a;}
@@ -991,47 +1026,47 @@
 
           <div class="gstat-grid">
             <div class="gstat-card c-green">
-              <div class="gstat-label">🏢 Omzet Bisnis</div>
+              <div class="gstat-top"><div class="gstat-icon">🏢</div><div class="gstat-label">Omzet Bisnis</div></div>
               <div class="gstat-amount" id="stat-biz-revenue">$0</div>
               <div class="gstat-sub" id="stat-biz-delta">0 produk bisnis</div>
             </div>
             <div class="gstat-card c-orange">
-              <div class="gstat-label">🏢 Modal Bisnis</div>
+              <div class="gstat-top"><div class="gstat-icon">💰</div><div class="gstat-label">Modal Bisnis</div></div>
               <div class="gstat-amount" id="stat-biz-cost">$0</div>
               <div class="gstat-sub">Modal terpakai bisnis</div>
             </div>
             <div class="gstat-card c-teal">
-              <div class="gstat-label">🏢 Profit Bisnis</div>
+              <div class="gstat-top"><div class="gstat-icon">📈</div><div class="gstat-label">Profit Bisnis</div></div>
               <div class="gstat-amount" id="stat-biz-profit">$0</div>
               <div class="gstat-sub" id="stat-biz-count">0 transaksi selesai</div>
             </div>
             <div class="gstat-card c-red">
-              <div class="gstat-label">🔒 Omzet Brangkas</div>
+              <div class="gstat-top"><div class="gstat-icon">🔒</div><div class="gstat-label">Omzet Brangkas</div></div>
               <div class="gstat-amount" id="stat-illegal-revenue">$0</div>
               <div class="gstat-sub" id="stat-illegal-delta">0 produk brangkas</div>
             </div>
             <div class="gstat-card c-orange">
-              <div class="gstat-label">🔒 Modal Brangkas</div>
+              <div class="gstat-top"><div class="gstat-icon">💰</div><div class="gstat-label">Modal Brangkas</div></div>
               <div class="gstat-amount" id="stat-illegal-cost">$0</div>
               <div class="gstat-sub">Modal terpakai brangkas</div>
             </div>
             <div class="gstat-card c-red">
-              <div class="gstat-label">🔒 Profit Brangkas</div>
+              <div class="gstat-top"><div class="gstat-icon">📉</div><div class="gstat-label">Profit Brangkas</div></div>
               <div class="gstat-amount" id="stat-illegal-profit">$0</div>
               <div class="gstat-sub" id="stat-illegal-count">0 transaksi selesai</div>
             </div>
             <div class="gstat-card c-purple">
-              <div class="gstat-label">Total Omzet</div>
+              <div class="gstat-top"><div class="gstat-icon">💎</div><div class="gstat-label">Total Omzet</div></div>
               <div class="gstat-amount" id="hero-total">$0</div>
               <div class="gstat-sub">Bisnis + Brangkas (selesai)</div>
             </div>
             <div class="gstat-card c-skyblue">
-              <div class="gstat-label">Total Profit Bersih</div>
+              <div class="gstat-top"><div class="gstat-icon">✨</div><div class="gstat-label">Total Profit Bersih</div></div>
               <div class="gstat-amount" id="stat-profit-delta">$0</div>
               <div class="gstat-sub" id="stat-lowstock-delta">0 stok kritis</div>
             </div>
             <div class="gstat-card c-blue">
-              <div class="gstat-label">Total Order Selesai</div>
+              <div class="gstat-top"><div class="gstat-icon">✅</div><div class="gstat-label">Total Order Selesai</div></div>
               <div class="gstat-amount" id="stat-order-count">0</div>
               <div class="gstat-sub" id="stat-pending-delta">0 order pending</div>
             </div>
@@ -3201,6 +3236,7 @@ function drawChart(range) {
     const pct = Math.max((totals[i] / max) * 100, totals[i] > 0 ? 4 : 2);
     const isToday = range === 'weekly' && i === todayIdx;
     return `<div class="barchart-col${isToday ? ' today' : ''}" title="${l}: ${fmt(totals[i])}">
+      <div class="barchart-val">${totals[i] > 0 ? fmt(totals[i]) : ''}</div>
       <div class="barchart-bar" style="height:${pct}%"></div>
       <div class="barchart-xlabel">${range === 'weekly' ? l.split(' ')[0].toUpperCase() : l.toUpperCase()}</div>
     </div>`;
