@@ -2135,13 +2135,18 @@ async function initFirebaseData() {
 // supaya tidak kena limit 1MB per dokumen Firestore.
 const MAX_IMAGE_MB = 5;
 // Kompres & resize gambar di browser sebelum diupload biar cepat di koneksi lambat.
-// GIF dilewati (biar animasi nggak rusak); kalau hasil kompresi malah lebih besar, pakai file asli.
+// GIF dilewati (biar animasi nggak rusak). PNG dipertahankan sebagai PNG (biar transparansi
+// tidak hilang — JPEG tidak mendukung alpha channel, jadi background transparan akan
+// jadi putih/hitam kalau dipaksa ke JPEG). Kalau hasil kompresi malah lebih besar, pakai file asli.
 function compressImage(file, maxDim = 1280, quality = 0.82) {
   return new Promise(resolve => {
     if (!file.type.startsWith('image/') || file.type === 'image/gif') {
       resolve(file);
       return;
     }
+    const keepPng = file.type === 'image/png';
+    const outType = keepPng ? 'image/png' : 'image/jpeg';
+    const outExt = keepPng ? '.png' : '.jpg';
     const reader = new FileReader();
     reader.onload = e => {
       const img = new Image();
@@ -2157,8 +2162,8 @@ function compressImage(file, maxDim = 1280, quality = 0.82) {
         canvas.getContext('2d').drawImage(img, 0, 0, width, height);
         canvas.toBlob(blob => {
           if (!blob || blob.size >= file.size) { resolve(file); return; }
-          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' }));
-        }, 'image/jpeg', quality);
+          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '') + outExt, { type: outType }));
+        }, outType, quality);
       };
       img.onerror = () => resolve(file);
       img.src = e.target.result;
