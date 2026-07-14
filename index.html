@@ -542,6 +542,7 @@
   .gstat-card.c-orange{--gc1:#f7b955;--gc2:#e08a3c;}
   .gstat-card.c-teal{--gc1:#4ad8a8;--gc2:#5aa0e0;}
   .gstat-card.c-skyblue{--gc1:#5aa0e0;--gc2:#4ad8a8;}
+  .gstat-card.c-red{--gc1:#e0637a;--gc2:#c0405a;}
   .gstat-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
   .gstat-amount{font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:-.3px;}
   .gstat-card.c-blue .gstat-amount{color:var(--gc1);}
@@ -550,6 +551,7 @@
   .gstat-card.c-orange .gstat-amount{color:var(--gc1);}
   .gstat-card.c-teal .gstat-amount{color:var(--gc1);}
   .gstat-card.c-skyblue .gstat-amount{color:#fff;}
+  .gstat-card.c-red .gstat-amount{color:var(--gc1);}
   .gstat-sub{font-size:10.5px;color:var(--muted);margin-top:7px;}
 
   /* ---- TWO COLUMN: bar chart + status transaksi ---- */
@@ -566,17 +568,8 @@
   .barchart-xlabel{font-size:10px;color:var(--muted);letter-spacing:.5px;}
 
   /* ── Split detail Bisnis vs Brangkas & Rekap Bulanan ── */
-  .split-detail-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;}
-  .split-panel{background:rgba(255,255,255,0.04);border-radius:16px;padding:18px 20px;}
-  .split-panel-title{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:16px;}
-  .split-panel-title .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
-  .split-mini-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
-  .split-mini{background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 12px;}
-  .split-mini .sm-label{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
-  .split-mini .sm-amount{font-family:var(--display);font-size:15px;font-weight:700;}
-  .rekap-section-title{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin:20px 0 12px 0;}
+  .rekap-section-title{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin:20px 0 12px 0;color:#fff;}
   .rekap-section-title .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
-  @media(max-width:900px){ .split-detail-row{grid-template-columns:1fr;} .split-mini-cards{grid-template-columns:1fr 1fr;} }
 
   .statlist-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-left:3px solid var(--sl-color,var(--accent-blue));padding-left:12px;margin-bottom:4px;}
   .statlist-row + .statlist-row{border-top:1px solid rgba(255,255,255,0.06);}
@@ -976,32 +969,47 @@
           </div>
 
           <div class="gstat-grid">
-            <div class="gstat-card c-blue">
-              <div class="gstat-label">Omzet Ilegal (Brangkas)</div>
-              <div class="gstat-amount" id="stat-illegal-revenue">$0</div>
-              <div class="gstat-sub" id="stat-illegal-delta">0 produk brangkas</div>
-            </div>
             <div class="gstat-card c-green">
-              <div class="gstat-label">Omzet Bisnis</div>
+              <div class="gstat-label">🏢 Omzet Bisnis</div>
               <div class="gstat-amount" id="stat-biz-revenue">$0</div>
               <div class="gstat-sub" id="stat-biz-delta">0 produk bisnis</div>
             </div>
-            <div class="gstat-card c-purple">
-              <div class="gstat-label">Modal Terpakai</div>
-              <div class="gstat-amount" id="stat-spending">$0</div>
-              <div class="gstat-sub" id="stat-cost-delta">Total modal keluar</div>
-            </div>
             <div class="gstat-card c-orange">
-              <div class="gstat-label">Total Omzet</div>
-              <div class="gstat-amount" id="hero-total">$0</div>
-              <div class="gstat-sub">Bisnis + Ilegal (selesai)</div>
+              <div class="gstat-label">🏢 Modal Bisnis</div>
+              <div class="gstat-amount" id="stat-biz-cost">$0</div>
+              <div class="gstat-sub">Modal terpakai bisnis</div>
             </div>
             <div class="gstat-card c-teal">
-              <div class="gstat-label">Profit Bersih</div>
+              <div class="gstat-label">🏢 Profit Bisnis</div>
+              <div class="gstat-amount" id="stat-biz-profit">$0</div>
+              <div class="gstat-sub" id="stat-biz-count">0 transaksi selesai</div>
+            </div>
+            <div class="gstat-card c-red">
+              <div class="gstat-label">🔒 Omzet Brangkas</div>
+              <div class="gstat-amount" id="stat-illegal-revenue">$0</div>
+              <div class="gstat-sub" id="stat-illegal-delta">0 produk brangkas</div>
+            </div>
+            <div class="gstat-card c-orange">
+              <div class="gstat-label">🔒 Modal Brangkas</div>
+              <div class="gstat-amount" id="stat-illegal-cost">$0</div>
+              <div class="gstat-sub">Modal terpakai brangkas</div>
+            </div>
+            <div class="gstat-card c-red">
+              <div class="gstat-label">🔒 Profit Brangkas</div>
+              <div class="gstat-amount" id="stat-illegal-profit">$0</div>
+              <div class="gstat-sub" id="stat-illegal-count">0 transaksi selesai</div>
+            </div>
+            <div class="gstat-card c-purple">
+              <div class="gstat-label">Total Omzet</div>
+              <div class="gstat-amount" id="hero-total">$0</div>
+              <div class="gstat-sub">Bisnis + Brangkas (selesai)</div>
+            </div>
+            <div class="gstat-card c-skyblue">
+              <div class="gstat-label">Total Profit Bersih</div>
               <div class="gstat-amount" id="stat-profit-delta">$0</div>
               <div class="gstat-sub" id="stat-lowstock-delta">0 stok kritis</div>
             </div>
-            <div class="gstat-card c-skyblue">
+            <div class="gstat-card c-blue">
               <div class="gstat-label">Total Order Selesai</div>
               <div class="gstat-amount" id="stat-order-count">0</div>
               <div class="gstat-sub" id="stat-pending-delta">0 order pending</div>
@@ -1020,30 +1028,6 @@
                 <span class="statlist-rate-label">Success Rate</span>
                 <span class="statlist-rate-val" id="statlist-rate-val">0%</span>
               </div>
-            </div>
-          </div>
-
-          <div class="rekap-section-title"><span class="dot" style="background:#5aa0e0"></span> Detail Terpisah: Omzet Bisnis vs Omzet Brangkas (Checkout)</div>
-          <div class="split-detail-row">
-            <div class="split-panel">
-              <div class="split-panel-title"><span class="dot" style="background:#4ad8a8"></span> 🏢 Omzet Bisnis</div>
-              <div class="split-mini-cards">
-                <div class="split-mini"><div class="sm-label">Omzet</div><div class="sm-amount" id="biz-detail-revenue" style="color:#4ad8a8">$0</div></div>
-                <div class="split-mini"><div class="sm-label">Modal</div><div class="sm-amount" id="biz-detail-cost" style="color:#f7b955">$0</div></div>
-                <div class="split-mini"><div class="sm-label">Profit</div><div class="sm-amount" id="biz-detail-profit">$0</div></div>
-              </div>
-              <div class="sm-label" style="margin-bottom:10px" id="biz-detail-count">0 transaksi selesai</div>
-              <div class="barchart-wrap" id="barchart-biz"></div>
-            </div>
-            <div class="split-panel">
-              <div class="split-panel-title"><span class="dot" style="background:#e0637a"></span> 🔒 Omzet Brangkas (Checkout)</div>
-              <div class="split-mini-cards">
-                <div class="split-mini"><div class="sm-label">Omzet</div><div class="sm-amount" id="illegal-detail-revenue" style="color:#e0637a">$0</div></div>
-                <div class="split-mini"><div class="sm-label">Modal</div><div class="sm-amount" id="illegal-detail-cost" style="color:#f7b955">$0</div></div>
-                <div class="split-mini"><div class="sm-label">Profit</div><div class="sm-amount" id="illegal-detail-profit">$0</div></div>
-              </div>
-              <div class="sm-label" style="margin-bottom:10px" id="illegal-detail-count">0 transaksi selesai</div>
-              <div class="barchart-wrap" id="barchart-illegal"></div>
             </div>
           </div>
 
@@ -2199,22 +2183,47 @@ function compressImage(file, maxDim = 1280, quality = 0.82) {
 
 const UPLOAD_TIMEOUT_MS = 30000;
 
-// Ambil gambar dari URL luar (misal postimg) lalu upload ulang ke storage sendiri —
-// biar tidak lagi tergantung domain hosting pihak ketiga yang bisa diblokir
-// ad-blocker/DNS filter di sebagian device (kasus PC tidak muncul gambar).
+// Deteksi link "halaman" postimg/postimages (bukan link gambar langsung).
+// Kasus paling umum kenapa gambar tidak muncul & rehost gagal: user copy link
+// halaman share (postimg.cc/XXXXX atau postimages.org/...) padahal yang
+// dibutuhkan adalah "Direct link" (biasanya berupa i.postimg.cc/XXXXX/nama.jpg).
+function isLikelyImagePageUrl(url) {
+  return /^https?:\/\/(postimg\.cc|www\.postimg\.cc|postimages\.org|www\.postimages\.org)\/(?!.*\.(jpg|jpeg|png|gif|webp|bmp)(\?|$))/i.test(url);
+}
+
 async function fetchExternalImageAsBlob(url) {
-  // Percobaan langsung dulu (banyak CDN gambar sudah kasih header CORS terbuka).
-  try {
-    const res = await fetch(url, { mode: 'cors' });
-    if (res.ok) return await res.blob();
-  } catch (e) { /* lanjut ke fallback proxy */ }
-  // Fallback lewat proxy publik kalau origin gambar tidak kasih izin CORS.
-  try {
-    const proxied = 'https://corsproxy.io/?url=' + encodeURIComponent(url);
-    const res2 = await fetch(proxied);
-    if (res2.ok) return await res2.blob();
-  } catch (e) { /* lanjut throw di bawah */ }
-  throw new Error('Gagal mengambil gambar dari URL itu (mungkin diblokir atau linknya salah).');
+  if (isLikelyImagePageUrl(url)) {
+    throw new Error('Link ini adalah link HALAMAN postimg, bukan link gambar langsung. Buka gambarnya di postimg, lalu salin URL pada kolom "Direct link" (biasanya diawali i.postimg.cc/...) dan coba lagi.');
+  }
+
+  const proxies = [
+    u => u, // percobaan langsung dulu (banyak CDN gambar sudah kasih header CORS terbuka)
+    u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+    u => 'https://images.weserv.nl/?url=' + encodeURIComponent(u.replace(/^https?:\/\//, '')),
+    u => 'https://wsrv.nl/?url=' + encodeURIComponent(u.replace(/^https?:\/\//, '')),
+    u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+  ];
+
+  let lastErr = null;
+  for (const buildUrl of proxies) {
+    try {
+      const res = await fetch(buildUrl(url), { mode: 'cors' });
+      if (!res.ok) { lastErr = new Error(`Server gambar membalas status ${res.status}`); continue; }
+      const blob = await res.blob();
+      // Validasi: hasil fetch harus benar-benar file gambar, bukan halaman HTML/JSON
+      // (ini penyebab gambar "berhasil" di-rehost tapi tetap tidak muncul setelah refresh).
+      if (!blob.type || !blob.type.startsWith('image/')) {
+        lastErr = new Error('Link ini tidak mengarah ke file gambar langsung (server membalas ' + (blob.type || 'tipe tidak dikenal') + '). Pastikan pakai "Direct link", bukan link halaman.');
+        continue;
+      }
+      if (blob.size < 100) { lastErr = new Error('File gambar yang diterima kosong/rusak.'); continue; }
+      return blob;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('Gagal mengambil gambar dari URL itu (mungkin diblokir atau linknya salah).');
 }
 
 async function rehostExternalImage(url, folder, onProgress) {
@@ -2926,19 +2935,33 @@ function renderOverview() {
     const illegalRevenue = illegalOrders.reduce((a, o) => a + o.total, 0);
     const totalRevenue = bizRevenue + illegalRevenue;
 
-    const cost = completed.reduce((a, o) => {
-      const p = products.find(x => x.id === o.productId);
-      return a + (p ? p.buy * o.qty : 0);
-    }, 0);
+    function costOf(list) {
+      return list.reduce((a, o) => {
+        const p = products.find(x => x.id === o.productId);
+        return a + (p ? p.buy * o.qty : 0);
+      }, 0);
+    }
+    const bizCost = costOf(bizOrders);
+    const illegalCost = costOf(illegalOrders);
+    const cost = bizCost + illegalCost;
+    const bizProfit = bizRevenue - bizCost;
+    const illegalProfit = illegalRevenue - illegalCost;
     const profit = totalRevenue - cost;
 
     document.getElementById('hero-total').textContent = fmt(totalRevenue);
 
     document.getElementById('stat-biz-revenue').textContent = fmt(bizRevenue);
     document.getElementById('stat-biz-delta').textContent = `${products.filter(p => p.type === 'biz').length} produk bisnis`;
+    document.getElementById('stat-biz-cost').textContent = fmt(bizCost);
+    document.getElementById('stat-biz-profit').textContent = `${bizProfit >= 0 ? '' : '-'}${fmt(Math.abs(bizProfit))}`;
+    document.getElementById('stat-biz-count').textContent = `${bizOrders.length} transaksi selesai`;
+
     document.getElementById('stat-illegal-revenue').textContent = fmt(illegalRevenue);
     document.getElementById('stat-illegal-delta').textContent = `${products.filter(p => p.type === 'illegal').length} produk brangkas`;
-    document.getElementById('stat-spending').textContent = fmt(cost);
+    document.getElementById('stat-illegal-cost').textContent = fmt(illegalCost);
+    document.getElementById('stat-illegal-profit').textContent = `${illegalProfit >= 0 ? '' : '-'}${fmt(Math.abs(illegalProfit))}`;
+    document.getElementById('stat-illegal-count').textContent = `${illegalOrders.length} transaksi selesai`;
+
     document.getElementById('stat-profit-delta').textContent = `${profit >= 0 ? '' : '-'}${fmt(Math.abs(profit))}`;
     const lowStock = products.filter(p => p.stock === 0).length;
     document.getElementById('stat-lowstock-delta').textContent = `${lowStock} stok kritis`;
@@ -2949,66 +2972,9 @@ function renderOverview() {
     renderStatusList();
     renderRecentOrders();
     drawChart(state.chartRange);
-    renderSplitDetail();
   } else {
     renderMemberOverview();
   }
-}
-
-// ════════════════════════════════════
-//  DETAIL TERPISAH: OMZET BISNIS vs OMZET BRANGKAS (CHECKOUT)
-// ════════════════════════════════════
-function renderSplitDetail() {
-  const bizWrap = document.getElementById('barchart-biz');
-  const illegalWrap = document.getElementById('barchart-illegal');
-  if (!bizWrap || !illegalWrap) return;
-
-  const completed = orders.filter(o => o.status === 'selesai');
-
-  function statsFor(type) {
-    const list = completed.filter(o => getOrderType(o) === type);
-    const revenue = list.reduce((a, o) => a + o.total, 0);
-    const cost = list.reduce((a, o) => {
-      const p = products.find(x => x.id === o.productId);
-      return a + (p ? p.buy * o.qty : 0);
-    }, 0);
-    return { revenue, cost, profit: revenue - cost, count: list.length, list };
-  }
-
-  const biz = statsFor('biz');
-  const illegal = statsFor('illegal');
-
-  document.getElementById('biz-detail-revenue').textContent = fmt(biz.revenue);
-  document.getElementById('biz-detail-cost').textContent = fmt(biz.cost);
-  document.getElementById('biz-detail-profit').textContent = `${biz.profit >= 0 ? '' : '-'}${fmt(Math.abs(biz.profit))}`;
-  document.getElementById('biz-detail-count').textContent = `${biz.count} transaksi selesai`;
-
-  document.getElementById('illegal-detail-revenue').textContent = fmt(illegal.revenue);
-  document.getElementById('illegal-detail-cost').textContent = fmt(illegal.cost);
-  document.getElementById('illegal-detail-profit').textContent = `${illegal.profit >= 0 ? '' : '-'}${fmt(Math.abs(illegal.profit))}`;
-  document.getElementById('illegal-detail-count').textContent = `${illegal.count} transaksi selesai`;
-
-  function draw7day(list, wrap, colorClass) {
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i);
-      const key = d.toISOString().slice(0, 10);
-      const val = list.filter(o => o.createdAt.slice(0, 10) === key).reduce((a, o) => a + o.total, 0);
-      days.push({ label: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }), val });
-    }
-    const max = Math.max(...days.map(d => d.val), 1);
-    wrap.innerHTML = days.map((d, i) => {
-      const pct = Math.max((d.val / max) * 100, d.val > 0 ? 4 : 2);
-      const isToday = i === days.length - 1;
-      return `<div class="barchart-col${isToday ? ' today' : ''}" title="${d.label}: ${fmt(d.val)}">
-        <div class="barchart-bar ${colorClass}" style="height:${pct}%"></div>
-        <div class="barchart-xlabel">${d.label.split(' ')[0].toUpperCase()}</div>
-      </div>`;
-    }).join('');
-  }
-
-  draw7day(biz.list, bizWrap, 'biz');
-  draw7day(illegal.list, illegalWrap, '');
 }
 
 // ════════════════════════════════════
