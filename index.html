@@ -1511,7 +1511,14 @@
           </div>
         </div>
       </div>
-      <div class="form-row triple">
+      <div class="form-row single hidden" id="p-money-note" style="margin-bottom:0">
+        <div class="form-group">
+          <span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--accent-peach);background:rgba(247,217,176,0.08);border:1px solid rgba(247,217,176,0.25);padding:8px 12px;border-radius:9px">
+            💰 Barang ini tidak memakai harga jual/beli. Saldo/stok dikelola lewat sistem <b>Deposit &amp; Withdraw</b> (tombol 🔺/🔻), bukan lewat form ini.
+          </span>
+        </div>
+      </div>
+      <div class="form-row triple" id="p-price-stock-row">
         <div class="form-group">
           <label class="form-label">Harga Beli</label>
           <input class="form-input" id="p-buy" type="number" placeholder="0">
@@ -1628,6 +1635,44 @@
     </div>
   </div>
 </div>
+
+<!-- DEPOSIT / WITHDRAW (khusus RED MONEY & BLACK MONEY, admin/dev only) -->
+<div class="modal-overlay" id="modal-depowd">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title" id="dw-title">DEPOSIT</div>
+      <button class="modal-close" onclick="closeModal('modal-depowd')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="dw-id">
+      <input type="hidden" id="dw-mode">
+      <div style="margin-bottom:14px;font-size:13px;color:#fff;font-weight:600" id="dw-name"></div>
+      <div style="margin-bottom:14px;padding:10px 12px;background:rgba(74,216,168,0.06);border:1px solid rgba(74,216,168,0.2);border-radius:9px">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:5px">DIINPUT OLEH (SESUAI AKUN LOGIN)</div>
+        <div class="member-tag">
+          <span class="m-avatar" id="dw-avatar">A</span>
+          <span id="dw-uname" style="font-size:13px;color:#fff"></span>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px">Stok saat ini: <b id="dw-current" style="color:#fff"></b></div>
+      <div class="form-group">
+        <label class="form-label" id="dw-amount-label">Jumlah</label>
+        <input class="form-input" id="dw-amount" type="number" min="1" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Catatan (opsional)</label>
+        <input class="form-input" id="dw-note" placeholder="cth: setoran hasil operasi...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-depowd')">Batal</button>
+      <button class="btn btn-primary" id="dw-save-btn" onclick="saveDepoWd()">Simpan</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- MEMBER ORDER (self-order) -->
 <div class="modal-overlay" id="modal-member-order">
@@ -2592,6 +2637,12 @@ const isDeveloper = () => state.currentUser?.role === 'developer';
 const isAdmin = () => state.currentUser?.role === 'admin' || isDeveloper();
 const isMember = () => state.currentUser?.role === 'member';
 
+// ── Item khusus: RED MONEY & BLACK MONEY ──
+// Barang ini tidak pakai sistem harga jual/beli & tidak bisa di-order/checkout.
+// Stok dikelola lewat sistem DEPOSIT / WITHDRAW (khusus admin/dev), bukan edit stok manual.
+const MONEY_ITEM_NAMES = ['RED MONEY', 'BLACK MONEY'];
+const isMoneyItem = (p) => !!p && MONEY_ITEM_NAMES.includes((p.name || '').trim().toUpperCase());
+
 function avatarContent(user){
   if (!user) return 'A';
   if (user.photo) return `<img src="${user.photo}" alt="${user.username}">`;
@@ -2940,7 +2991,7 @@ function handleProfilePhotoUpload(input) {
 
 function renderCategoryCounts() {
   const checkoutEl = document.getElementById('cat-count-checkout');
-  if (checkoutEl) checkoutEl.textContent = products.filter(p => p.type === 'illegal' && !checkoutHiddenCats.includes(p.cat)).length;
+  if (checkoutEl) checkoutEl.textContent = products.filter(p => p.type === 'illegal' && !isMoneyItem(p) && !checkoutHiddenCats.includes(p.cat)).length;
   const bizEl = document.getElementById('cat-count-biz');
   if (bizEl) bizEl.textContent = products.filter(p => p.type === 'biz').length;
 }
@@ -3422,7 +3473,7 @@ function renderCheckoutTable() {
   const grid = document.getElementById('checkout-grid');
   if (!grid) return;
   const q = (document.getElementById('checkout-search')?.value || '').toLowerCase();
-  const items = products.filter(p => p.type === 'illegal' && !checkoutHiddenCats.includes(p.cat) && (state.checkoutFilter === 'all' || p.cat === state.checkoutFilter) && p.name.toLowerCase().includes(q));
+  const items = products.filter(p => p.type === 'illegal' && !isMoneyItem(p) && !checkoutHiddenCats.includes(p.cat) && (state.checkoutFilter === 'all' || p.cat === state.checkoutFilter) && p.name.toLowerCase().includes(q));
   if (!items.length) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🛒</div><p>BELUM ADA ITEM</p></div>`;
     return;
@@ -3432,19 +3483,26 @@ function renderCheckoutTable() {
 }
 
 function buildInvSlot(p, admin) {
+  const moneyItem = isMoneyItem(p);
   const stockPct = Math.min(100, (p.stock / 50) * 100);
   const stockColor = p.stock === 0 ? 'var(--danger)' : p.stock < 10 ? 'var(--warning)' : 'var(--success)';
   const imgContent = p.img ? `<img src="${p.img}" alt="${p.name}" onerror="this.outerHTML='<span>${p.icon}</span>'">` : `<span>${p.icon}</span>`;
-  const clickAction = p.stock > 0 ? `openMemberOrder(${p.id})` : '';
+  // RED MONEY / BLACK MONEY: tidak bisa diklik untuk order (sistem order dihapus utk barang ini)
+  const clickAction = (!moneyItem && p.stock > 0) ? `openMemberOrder(${p.id})` : '';
   const outTag = p.stock === 0 ? `<div class="inv-out-tag">HABIS</div>` : '';
+  // RED MONEY / BLACK MONEY: tidak ada harga jual/beli, edit stok diganti tombol Deposit/Withdraw (admin/dev saja)
+  const priceTag = moneyItem ? '' : `<span class="inv-price">${fmt(p.sell)}</span>`;
   const adminOverlay = admin ? `<div class="inv-admin-overlay">
       <button title="Edit produk" onclick="event.stopPropagation();openEditProduct(${p.id})">✏️</button>
       <button title="Ganti gambar" onclick="event.stopPropagation();openImgChange(${p.id})">📷</button>
-      <button title="Edit harga/stok" onclick="event.stopPropagation();openEditPrice(${p.id})">💲</button>
+      ${moneyItem
+        ? `<button title="Deposit" onclick="event.stopPropagation();openDepoWd(${p.id},'deposit')">🔺</button>
+      <button title="Withdraw" onclick="event.stopPropagation();openDepoWd(${p.id},'withdraw')">🔻</button>`
+        : `<button title="Edit harga/stok" onclick="event.stopPropagation();openEditPrice(${p.id})">💲</button>`}
       <button title="Hapus" class="danger" onclick="event.stopPropagation();confirmDelete(${p.id})">🗑</button>
     </div>` : '';
-  return `<div class="inv-slot ${p.stock === 0 ? 'out' : ''}" ${clickAction ? `onclick="${clickAction}"` : ''} title="${p.stock > 0 ? 'Klik untuk beli' : p.name}">
-    <div class="inv-top"><span class="inv-qty">${p.stock}x</span><span class="inv-price">${fmt(p.sell)}</span></div>
+  return `<div class="inv-slot ${p.stock === 0 ? 'out' : ''}" ${clickAction ? `onclick="${clickAction}"` : ''} title="${moneyItem ? p.name : (p.stock > 0 ? 'Klik untuk beli' : p.name)}">
+    <div class="inv-top"><span class="inv-qty">${p.stock}x</span>${priceTag}</div>
     <div class="inv-img">${imgContent}</div>
     <div class="inv-name">${p.name}</div>
     <div class="inv-bar-wrap"><div class="inv-bar" style="width:${stockPct}%;background:${stockColor}"></div></div>
@@ -3678,6 +3736,8 @@ function openAddProductModal(catPreset, typePreset) {
   document.getElementById('p-img-preview').innerHTML = '<span id="p-img-emoji">🖼</span>';
   document.getElementById('p-desc').value = '';
   document.getElementById('modal-product-title').textContent = 'TAMBAH PRODUK';
+  document.getElementById('p-price-stock-row').classList.remove('hidden');
+  document.getElementById('p-money-note').classList.add('hidden');
   resetCraftState();
   openModal('modal-product');
 }
@@ -3700,6 +3760,9 @@ function openEditProduct(pid) {
   prev.innerHTML = p.img ? `<img src="${p.img}">` : `<span id="p-img-emoji">${p.icon || '🖼'}</span>`;
   document.getElementById('p-desc').value = p.desc || '';
   document.getElementById('modal-product-title').textContent = 'EDIT PRODUK';
+  const money = isMoneyItem(p);
+  document.getElementById('p-price-stock-row').classList.toggle('hidden', money);
+  document.getElementById('p-money-note').classList.toggle('hidden', !money);
   openModal('modal-product');
 }
 
@@ -3870,6 +3933,7 @@ function saveImgChange() {
 function openMemberOrder(pid) {
   const p = products.find(x => x.id === pid);
   if (!p) return;
+  if (isMoneyItem(p)) { showToast('Barang ini tidak bisa di-order, gunakan sistem Deposit/Withdraw!', 'error'); return; }
   document.getElementById('mo-pid').value = pid;
   document.getElementById('mo-avatar').innerHTML = avatarContent(state.currentUser);
   document.getElementById('mo-uname').textContent = state.currentUser.username;
@@ -3949,6 +4013,55 @@ function saveEditPrice() {
   products[idx].stock = parseInt(document.getElementById('ep-stock').value) || 0;
   save(); renderAll(); closeModal('modal-price');
   showToast('Harga & stok diperbarui!', 'success');
+}
+
+// ════════════════════════════════════
+//  DEPOSIT / WITHDRAW (khusus RED MONEY & BLACK MONEY)
+//  - Hanya admin/dev yang boleh input.
+//  - Input selalu tercatat berdasarkan akun login yang sedang aktif (logActivity).
+// ════════════════════════════════════
+function openDepoWd(pid, mode) {
+  if (!isAdmin()) { showToast('Hanya admin/dev yang bisa input Deposit/Withdraw!', 'error'); return; }
+  const p = products.find(x => x.id === pid);
+  if (!p || !isMoneyItem(p)) return;
+  document.getElementById('dw-id').value = pid;
+  document.getElementById('dw-mode').value = mode;
+  document.getElementById('dw-title').textContent = mode === 'deposit' ? `🔺 DEPOSIT — ${p.name}` : `🔻 WITHDRAW — ${p.name}`;
+  document.getElementById('dw-name').textContent = p.icon + ' ' + p.name;
+  document.getElementById('dw-avatar').innerHTML = avatarContent(state.currentUser);
+  document.getElementById('dw-uname').textContent = `${state.currentUser.username} (${state.currentUser.role})`;
+  document.getElementById('dw-current').textContent = `${p.stock}x`;
+  document.getElementById('dw-amount-label').textContent = mode === 'deposit' ? 'Jumlah Deposit' : 'Jumlah Withdraw';
+  document.getElementById('dw-amount').value = '';
+  document.getElementById('dw-note').value = '';
+  const btn = document.getElementById('dw-save-btn');
+  btn.className = mode === 'deposit' ? 'btn btn-primary' : 'btn btn-danger';
+  btn.textContent = mode === 'deposit' ? 'Simpan Deposit' : 'Simpan Withdraw';
+  openModal('modal-depowd');
+}
+
+function saveDepoWd() {
+  if (!isAdmin()) { showToast('Hanya admin/dev yang bisa input Deposit/Withdraw!', 'error'); return; }
+  const id = parseInt(document.getElementById('dw-id').value);
+  const mode = document.getElementById('dw-mode').value;
+  const idx = products.findIndex(p => p.id === id);
+  if (idx < 0) return;
+  const p = products[idx];
+  if (!isMoneyItem(p)) return;
+  const amount = parseInt(document.getElementById('dw-amount').value) || 0;
+  if (amount <= 0) { showToast('Jumlah harus lebih dari 0!', 'error'); return; }
+  const note = document.getElementById('dw-note').value.trim();
+  if (mode === 'withdraw' && amount > p.stock) {
+    showToast(`Stok tidak cukup untuk withdraw! Tersedia: ${p.stock}`, 'error');
+    return;
+  }
+  const before = p.stock;
+  p.stock = mode === 'deposit' ? p.stock + amount : p.stock - amount;
+  const actionLabel = mode === 'deposit' ? 'Deposit Uang' : 'Withdraw Uang';
+  const arrow = mode === 'deposit' ? '+' : '-';
+  logActivity(actionLabel, `${p.name} ${arrow}${amount} (sebelum: ${before}, sesudah: ${p.stock})${note ? ' — ' + note : ''}`);
+  save(); renderAll(); closeModal('modal-depowd');
+  showToast(`${mode === 'deposit' ? 'Deposit' : 'Withdraw'} berhasil dicatat!`, 'success');
 }
 
 // ════════════════════════════════════
