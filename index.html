@@ -521,6 +521,72 @@
     cursor:pointer;
   }
 
+  /* ---- GRADIENT STAT CARDS (Overview restyle) ---- */
+  .gstat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .gstat-card{
+    position:relative;
+    background:rgba(255,255,255,0.04);
+    border-radius:14px;
+    padding:18px 18px 16px 18px;
+    overflow:hidden;
+  }
+  .gstat-card::before{
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,var(--gc1),var(--gc2));
+  }
+  .gstat-card.c-blue{--gc1:#5aa0e0;--gc2:#7b6ee0;}
+  .gstat-card.c-green{--gc1:#4ad8a8;--gc2:#2fae86;}
+  .gstat-card.c-purple{--gc1:#a06ee0;--gc2:#7b6ee0;}
+  .gstat-card.c-orange{--gc1:#f7b955;--gc2:#e08a3c;}
+  .gstat-card.c-teal{--gc1:#4ad8a8;--gc2:#5aa0e0;}
+  .gstat-card.c-skyblue{--gc1:#5aa0e0;--gc2:#4ad8a8;}
+  .gstat-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+  .gstat-amount{font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:-.3px;}
+  .gstat-card.c-blue .gstat-amount{color:var(--gc1);}
+  .gstat-card.c-green .gstat-amount{color:var(--gc1);}
+  .gstat-card.c-purple .gstat-amount{color:var(--gc1);}
+  .gstat-card.c-orange .gstat-amount{color:var(--gc1);}
+  .gstat-card.c-teal .gstat-amount{color:var(--gc1);}
+  .gstat-card.c-skyblue .gstat-amount{color:#fff;}
+  .gstat-sub{font-size:10.5px;color:var(--muted);margin-top:7px;}
+
+  /* ---- TWO COLUMN: bar chart + status transaksi ---- */
+  .ov-split-row{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:stretch;}
+  .ov-panel{background:rgba(255,255,255,0.04);border-radius:16px;padding:18px 20px;}
+  .ov-panel-title{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#fff;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:18px;}
+  .ov-panel-title .dot{width:7px;height:7px;border-radius:50%;background:var(--accent-blue);display:inline-block;}
+
+  .barchart-wrap{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;height:140px;}
+  .barchart-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:8px;}
+  .barchart-bar{width:100%;max-width:34px;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,#c0405a,#7a2f45);min-height:4px;transition:height .4s ease;}
+  .barchart-col.today .barchart-bar{background:transparent;border:2px solid var(--accent-blue);}
+  .barchart-xlabel{font-size:10px;color:var(--muted);letter-spacing:.5px;}
+
+  .statlist-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-left:3px solid var(--sl-color,var(--accent-blue));padding-left:12px;margin-bottom:4px;}
+  .statlist-row + .statlist-row{border-top:1px solid rgba(255,255,255,0.06);}
+  .statlist-name{color:#fff;font-size:13.5px;font-weight:600;}
+  .statlist-sub{color:var(--muted);font-size:10px;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+  .statlist-count{color:#fff;font-family:var(--display);font-size:20px;font-weight:700;}
+  .statlist-rate{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);}
+  .statlist-rate-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+  .statlist-rate-val{font-family:var(--display);font-size:19px;font-weight:700;color:#f7b955;}
+
+  .tx-table{width:100%;border-collapse:collapse;}
+  .tx-table th{text-align:left;font-size:9.5px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:0 10px 12px 10px;font-weight:600;}
+  .tx-table td{padding:12px 10px;font-size:12.5px;color:#fff;border-top:1px solid rgba(255,255,255,0.06);}
+  .tx-table tr:hover td{background:rgba(255,255,255,0.02);}
+  .tx-name{font-weight:700;}
+  .tx-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;padding:4px 10px;border-radius:20px;}
+  .tx-badge.ok{background:rgba(74,216,168,0.15);color:#4ad8a8;}
+  .tx-badge.proc{background:rgba(247,185,85,0.15);color:#f7b955;}
+  .tx-badge.bad{background:rgba(224,99,122,0.15);color:#e0637a;}
+  .tx-badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+  @media (max-width:900px){
+    .gstat-grid{grid-template-columns:repeat(2,1fr);}
+    .ov-split-row{grid-template-columns:1fr;}
+  }
+
   .dash-right{
     width:280px;
     padding:28px 22px;
@@ -893,67 +959,62 @@
             </div>
           </div>
 
-          <div class="hero-revenue">
-            <div class="hero-top">
-              <div>
-                <div class="hero-label">Total Omzet (Selesai)</div>
-                <div class="hero-amount" id="hero-total">$0</div>
-              </div>
-              <div class="hero-legend">
-                <div class="legend-item">
-                  <span class="lbl"><span class="legend-dot" style="background:#4ad8a8"></span>Bisnis</span>
-                  <b id="legend-biz-amt">$0</b>
-                </div>
-                <div class="legend-item">
-                  <span class="lbl"><span class="legend-dot" style="background:#e0637a"></span>Brangkas</span>
-                  <b id="legend-illegal-amt">$0</b>
-                </div>
-              </div>
+          <div class="gstat-grid">
+            <div class="gstat-card c-blue">
+              <div class="gstat-label">Omzet Ilegal (Brangkas)</div>
+              <div class="gstat-amount" id="stat-illegal-revenue">$0</div>
+              <div class="gstat-sub" id="stat-illegal-delta">0 produk brangkas</div>
             </div>
-            <div class="split-bar">
-              <div class="split-seg biz" id="split-biz" style="width:50%"></div>
-              <div class="split-seg illegal" id="split-illegal" style="width:50%"></div>
+            <div class="gstat-card c-green">
+              <div class="gstat-label">Omzet Bisnis</div>
+              <div class="gstat-amount" id="stat-biz-revenue">$0</div>
+              <div class="gstat-sub" id="stat-biz-delta">0 produk bisnis</div>
+            </div>
+            <div class="gstat-card c-purple">
+              <div class="gstat-label">Modal Terpakai</div>
+              <div class="gstat-amount" id="stat-spending">$0</div>
+              <div class="gstat-sub" id="stat-cost-delta">Total modal keluar</div>
+            </div>
+            <div class="gstat-card c-orange">
+              <div class="gstat-label">Total Omzet</div>
+              <div class="gstat-amount" id="hero-total">$0</div>
+              <div class="gstat-sub">Bisnis + Ilegal (selesai)</div>
+            </div>
+            <div class="gstat-card c-teal">
+              <div class="gstat-label">Profit Bersih</div>
+              <div class="gstat-amount" id="stat-profit-delta">$0</div>
+              <div class="gstat-sub" id="stat-lowstock-delta">0 stok kritis</div>
+            </div>
+            <div class="gstat-card c-skyblue">
+              <div class="gstat-label">Total Order Selesai</div>
+              <div class="gstat-amount" id="stat-order-count">0</div>
+              <div class="gstat-sub" id="stat-pending-delta">0 order pending</div>
             </div>
           </div>
 
-          <div class="chart-card">
-            <div class="chart-topline">
-              <div class="chart-legend">
-                <span><i style="background:#4ad8a8"></i>Bisnis</span>
-                <span><i style="background:#e0637a"></i>Ilegal</span>
+          <div class="ov-split-row">
+            <div class="ov-panel">
+              <div class="ov-panel-title"><span class="dot"></span> Volume 7 Hari Terakhir</div>
+              <div class="barchart-wrap" id="barchart-wrap"></div>
+            </div>
+            <div class="ov-panel">
+              <div class="ov-panel-title"><span class="dot" style="background:#4ad8a8"></span> Status Transaksi</div>
+              <div id="statlist-wrap"></div>
+              <div class="statlist-rate">
+                <span class="statlist-rate-label">Success Rate</span>
+                <span class="statlist-rate-val" id="statlist-rate-val">0%</span>
               </div>
-              <span id="chart-max-label">$0</span>
-            </div>
-            <svg id="chartSvg" viewBox="0 0 560 140" preserveAspectRatio="none"></svg>
-            <div class="chart-xaxis" id="chartXAxis"></div>
-          </div>
-
-          <div class="stat-cards stat-cards-4">
-            <div class="mini-card biz">
-              <div class="label"><span class="bar"></span> Omzet Bisnis</div>
-              <div class="amount" id="stat-biz-revenue">$0</div>
-              <div class="delta" id="stat-biz-delta">0 produk bisnis</div>
-            </div>
-            <div class="mini-card illegal">
-              <div class="label"><span class="bar"></span> Omzet Ilegal</div>
-              <div class="amount" id="stat-illegal-revenue">$0</div>
-              <div class="delta" id="stat-illegal-delta">0 produk brangkas</div>
-            </div>
-            <div class="mini-card cost">
-              <div class="label"><span class="bar"></span> Modal Terpakai</div>
-              <div class="amount" id="stat-spending">$0</div>
-              <div class="delta" id="stat-profit-delta">Profit $0</div>
-            </div>
-            <div class="mini-card stockcrit">
-              <div class="label"><span class="bar"></span> Stok Kritis</div>
-              <div class="amount" id="stat-lowstock">0</div>
-              <div class="delta" id="stat-pending-delta">0 order pending</div>
             </div>
           </div>
 
           <div class="payment-card">
-            <h3>Order Terbaru <a onclick="showPage('order')">Lihat semua →</a></h3>
-            <div id="recent-orders-list"></div>
+            <h3>Transaksi Terbaru <a onclick="showPage('order')">Lihat semua →</a></h3>
+            <div style="overflow-x:auto">
+              <table class="tx-table">
+                <thead><tr><th>Produk</th><th>Pembeli</th><th>Tanggal</th><th>Total</th><th>Status</th></tr></thead>
+                <tbody id="recent-orders-list"></tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -2803,31 +2864,52 @@ function renderOverview() {
     }, 0);
     const profit = totalRevenue - cost;
 
-    const bizPct = totalRevenue > 0 ? Math.round((bizRevenue / totalRevenue) * 100) : 50;
-    const illegalPct = totalRevenue > 0 ? 100 - bizPct : 50;
-
     document.getElementById('hero-total').textContent = fmt(totalRevenue);
-    document.getElementById('legend-biz-amt').textContent = fmt(bizRevenue);
-    document.getElementById('legend-illegal-amt').textContent = fmt(illegalRevenue);
-    document.getElementById('split-biz').style.width = bizPct + '%';
-    document.getElementById('split-illegal').style.width = illegalPct + '%';
 
     document.getElementById('stat-biz-revenue').textContent = fmt(bizRevenue);
     document.getElementById('stat-biz-delta').textContent = `${products.filter(p => p.type === 'biz').length} produk bisnis`;
     document.getElementById('stat-illegal-revenue').textContent = fmt(illegalRevenue);
     document.getElementById('stat-illegal-delta').textContent = `${products.filter(p => p.type === 'illegal').length} produk brangkas`;
     document.getElementById('stat-spending').textContent = fmt(cost);
-    document.getElementById('stat-profit-delta').textContent = `${profit >= 0 ? 'Profit' : 'Rugi'} ${fmt(Math.abs(profit))}`;
+    document.getElementById('stat-profit-delta').textContent = `${profit >= 0 ? '' : '-'}${fmt(Math.abs(profit))}`;
     const lowStock = products.filter(p => p.stock === 0).length;
-    document.getElementById('stat-lowstock').textContent = lowStock;
+    document.getElementById('stat-lowstock-delta').textContent = `${lowStock} stok kritis`;
+    document.getElementById('stat-order-count').textContent = completed.length;
     const pendingCount = orders.filter(o => o.status === 'pending').length;
     document.getElementById('stat-pending-delta').textContent = `${pendingCount} order pending`;
 
+    renderStatusList();
     renderRecentOrders();
     drawChart(state.chartRange);
   } else {
     renderMemberOverview();
   }
+}
+
+function renderStatusList() {
+  const wrap = document.getElementById('statlist-wrap');
+  const rateEl = document.getElementById('statlist-rate-val');
+  if (!wrap) return;
+  const berhasil = orders.filter(o => o.status === 'selesai').length;
+  const proses = orders.filter(o => ['pending', 'acc_order', 'acc_barang'].includes(o.status)).length;
+  const cancel = orders.filter(o => o.status === 'rejected').length;
+  const total = berhasil + proses + cancel;
+  const rate = total > 0 ? Math.round((berhasil / total) * 1000) / 10 : 0;
+  wrap.innerHTML = `
+    <div class="statlist-row" style="--sl-color:#4ad8a8">
+      <div><div class="statlist-name">Berhasil</div><div class="statlist-sub">Transaksi Selesai</div></div>
+      <div class="statlist-count">${berhasil}</div>
+    </div>
+    <div class="statlist-row" style="--sl-color:#f7b955">
+      <div><div class="statlist-name">Dalam Proses</div><div class="statlist-sub">Menunggu Konfirmasi</div></div>
+      <div class="statlist-count">${proses}</div>
+    </div>
+    <div class="statlist-row" style="--sl-color:#e0637a">
+      <div><div class="statlist-name">Cancel</div><div class="statlist-sub">Ditolak</div></div>
+      <div class="statlist-count">${cancel}</div>
+    </div>
+  `;
+  rateEl.textContent = `${rate}%`;
 }
 
 function renderMemberOverview() {
@@ -2873,32 +2955,29 @@ function renderMemberOverview() {
   }).join('');
 }
 
+function txBadge(status) {
+  if (status === 'selesai') return `<span class="tx-badge ok"><span class="dot"></span>BERHASIL</span>`;
+  if (status === 'rejected') return `<span class="tx-badge bad"><span class="dot"></span>DITOLAK</span>`;
+  return `<span class="tx-badge proc"><span class="dot"></span>PROSES</span>`;
+}
+
 function renderRecentOrders() {
   const wrap = document.getElementById('recent-orders-list');
   let list = isMember() ? orders.filter(o => o.buyerUsername === state.currentUser.username) : orders;
-  list = [...list].reverse().slice(0, 4);
+  list = [...list].reverse().slice(0, 6);
   if (!list.length) {
-    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Belum ada order</p></div>`;
+    wrap.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📭</div><p>Belum ada order</p></div></td></tr>`;
     return;
   }
   wrap.innerHTML = list.map(o => {
     const p = products.find(x => x.id === o.productId);
-    const type = getOrderType(o);
-    const dotColor = type === 'biz' ? '#4ad8a8' : '#e0637a';
-    const iconBg = type === 'biz' ? 'rgba(74,216,168,0.18)' : 'rgba(224,99,122,0.18)';
-    return `<div class="payment-row">
-      <div class="payment-left">
-        <div class="pay-icon" style="background:${iconBg}">${p ? p.icon : '📦'}</div>
-        <div>
-          <div class="pay-name">${p ? p.name : '?'} <span style="color:var(--muted);font-weight:400">x${o.qty}</span></div>
-          <div class="pay-due"><span class="pay-type-dot" style="background:${dotColor}"></span>${memberTag(o.buyer, o.buyerUsername).replace(/<[^>]+>/g, '').trim()}</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span class="pay-amount">${fmt(o.total)}</span>
-        ${statusBadge(o.status)}
-      </div>
-    </div>`;
+    return `<tr>
+      <td><span class="tx-name">${p ? p.icon + ' ' + p.name : '?'}</span> <span style="color:var(--muted)">x${o.qty}</span></td>
+      <td>${memberTag(o.buyer, o.buyerUsername).replace(/<[^>]+>/g, '').trim()}</td>
+      <td style="color:var(--muted)">${new Date(o.createdAt).toLocaleDateString('id-ID')}</td>
+      <td>${fmt(o.total)}</td>
+      <td>${txBadge(o.status)}</td>
+    </tr>`;
   }).join('');
 }
 
@@ -2957,47 +3036,19 @@ function drawChart(range) {
   state.chartRange = range;
   document.querySelectorAll('.stat-tabs span').forEach(s => s.classList.toggle('active', s.dataset.range === range));
   const data = getChartData(range);
-  const svg = document.getElementById('chartSvg');
-  const xAxis = document.getElementById('chartXAxis');
-  const w = 560, h = 140, pad = 10;
-  const allVals = [...data.bizValues, ...data.illegalValues];
-  const max = Math.max(...allVals, 1);
-  document.getElementById('chart-max-label').textContent = fmt(max);
-  const n = data.labels.length;
-  const step = n > 1 ? (w - pad * 2) / (n - 1) : 0;
-
-  function toPoints(values) {
-    return values.map((v, i) => {
-      const x = pad + i * step;
-      const y = h - pad - (v / max) * (h - pad * 2);
-      return [x, y];
-    });
-  }
-
-  const bizPoints = toPoints(data.bizValues);
-  const illegalPoints = toPoints(data.illegalValues);
-  const bizPath = buildSmoothPath(bizPoints);
-  const illegalPath = buildSmoothPath(illegalPoints);
-  const bizArea = bizPath + ` L ${bizPoints[bizPoints.length - 1][0]} ${h} L ${bizPoints[0][0]} ${h} Z`;
-
-  let peakIdx = 0, peakVal = -1;
-  data.bizValues.forEach((v, i) => { const t = v + data.illegalValues[i]; if (t > peakVal) { peakVal = t; peakIdx = i; } });
-
-  svg.innerHTML = `
-    <defs>
-      <linearGradient id="areaGradBiz" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#4ad8a8" stop-opacity="0.3"/>
-        <stop offset="100%" stop-color="#4ad8a8" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    <line x1="${bizPoints[peakIdx][0]}" y1="0" x2="${bizPoints[peakIdx][0]}" y2="${h}" stroke="rgba(255,255,255,0.12)" stroke-dasharray="3,3"/>
-    <path d="${bizArea}" fill="url(#areaGradBiz)"/>
-    <path d="${illegalPath}" fill="none" stroke="#e0637a" stroke-width="2.25" stroke-linecap="round" opacity="0.9"/>
-    <path d="${bizPath}" fill="none" stroke="#4ad8a8" stroke-width="2.5" stroke-linecap="round"/>
-    <circle cx="${bizPoints[peakIdx][0]}" cy="${bizPoints[peakIdx][1]}" r="4.5" fill="#4ad8a8" stroke="#0e1220" stroke-width="2"/>
-    <circle cx="${illegalPoints[peakIdx][0]}" cy="${illegalPoints[peakIdx][1]}" r="4.5" fill="#e0637a" stroke="#0e1220" stroke-width="2"/>
-  `;
-  xAxis.innerHTML = data.labels.map((l, i) => `<span style="${i === peakIdx ? 'color:#fff;' : ''}">${l}</span>`).join('');
+  const wrap = document.getElementById('barchart-wrap');
+  if (!wrap) return;
+  const totals = data.labels.map((_, i) => data.bizValues[i] + data.illegalValues[i]);
+  const max = Math.max(...totals, 1);
+  const todayIdx = totals.length - 1;
+  wrap.innerHTML = data.labels.map((l, i) => {
+    const pct = Math.max((totals[i] / max) * 100, totals[i] > 0 ? 4 : 2);
+    const isToday = range === 'weekly' && i === todayIdx;
+    return `<div class="barchart-col${isToday ? ' today' : ''}" title="${l}: ${fmt(totals[i])}">
+      <div class="barchart-bar" style="height:${pct}%"></div>
+      <div class="barchart-xlabel">${range === 'weekly' ? l.split(' ')[0].toUpperCase() : l.toUpperCase()}</div>
+    </div>`;
+  }).join('');
 }
 
 // ════════════════════════════════════
