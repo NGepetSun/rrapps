@@ -1213,6 +1213,16 @@
           </div>
         </div>
 
+        <div class="table-wrap dev-only" style="margin-bottom:16px">
+          <div class="table-top"><span class="table-title">🖼 Migrasi Gambar Produk Lama</span></div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+            <div style="font-size:11.5px;color:var(--muted)">Salin ulang semua gambar produk yang masih dari hosting luar (postimg, dll) ke server sendiri, biar tidak lagi rawan putus di sebagian device.</div>
+            <div id="img-migrate-status" style="font-size:11.5px;color:#fff"></div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary btn-sm" id="img-migrate-btn" onclick="migrateExternalProductImages()">🔄 Migrasi Sekarang</button>
+            </div>
+          </div>
+        </div>
 
         <div class="table-wrap">
           <div class="table-top"><span class="table-title">📜 Riwayat Aktivitas Sistem</span></div>
@@ -1335,7 +1345,11 @@
             </div>
           </div>
           <input type="file" id="p-img-file" accept="image/*" style="display:none" onchange="handleImgUpload(this)">
-          <input class="form-input" id="p-img" placeholder="https://... (opsional)" oninput="previewImgUrl(this.value)">
+          <div style="display:flex;gap:6px">
+            <input class="form-input" id="p-img" placeholder="https://... (opsional)" oninput="previewImgUrl(this.value)" style="flex:1">
+            <button type="button" class="btn btn-outline btn-sm" id="p-img-rehost-btn" onclick="rehostProductImgUrl()" title="Simpan gambar dari URL ini ke server sendiri, biar nggak gampang putus di device lain">📥 Simpan ke Server</button>
+          </div>
+          <div style="font-size:10.5px;color:var(--muted)">Kalau gambar dari hosting luar (postimg dll) suka putus/tidak muncul di sebagian device, klik "Simpan ke Server" biar disalin ke storage sendiri.</div>
           <input type="hidden" id="p-img-data">
         </div>
       </div>
@@ -1378,7 +1392,11 @@
       </div>
       <div>
         <div class="form-label" style="margin-bottom:7px">Atau URL gambar</div>
-        <input class="form-input" id="imgchange-url" placeholder="https://...">
+        <div style="display:flex;gap:6px">
+          <input class="form-input" id="imgchange-url" placeholder="https://..." style="flex:1">
+          <button type="button" class="btn btn-outline btn-sm" id="imgchange-rehost-btn" onclick="rehostImgchangeUrl()" title="Simpan gambar dari URL ini ke server sendiri">📥 Simpan ke Server</button>
+        </div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:6px">Kalau gambar dari hosting luar suka putus di sebagian device, klik "Simpan ke Server".</div>
       </div>
     </div>
     <div class="modal-footer">
@@ -2053,37 +2071,146 @@ function compressImage(file, maxDim = 1280, quality = 0.82) {
 
 const UPLOAD_TIMEOUT_MS = 30000;
 
+// Ambil gambar dari URL luar (misal postimg) lalu upload ulang ke storage sendiri —
+// biar tidak lagi tergantung domain hosting pihak ketiga yang bisa diblokir
+// ad-blocker/DNS filter di sebagian device (kasus PC tidak muncul gambar).
+async function fetchExternalImageAsBlob(url) {
+  // Percobaan langsung dulu (banyak CDN gambar sudah kasih header CORS terbuka).
+  try {
+    const res = await fetch(url, { mode: 'cors' });
+    if (res.ok) return await res.blob();
+  } catch (e) { /* lanjut ke fallback proxy */ }
+  // Fallback lewat proxy publik kalau origin gambar tidak kasih izin CORS.
+  try {
+    const proxied = 'https://corsproxy.io/?url=' + encodeURIComponent(url);
+    const res2 = await fetch(proxied);
+    if (res2.ok) return await res2.blob();
+  } catch (e) { /* lanjut throw di bawah */ }
+  throw new Error('Gagal mengambil gambar dari URL itu (mungkin diblokir atau linknya salah).');
+}
+
+async function rehostExternalImage(url, folder, onProgress) {
+  const blob = await fetchExternalImageAsBlob(url);
+  const ext = (blob.type && blob.type.split('/')[1]) || 'jpg';
+  const file = new File([blob], `external_${Date.now()}.${ext}`, { type: blob.type || 'image/jpeg' });
+  return uploadImageToStorage(file, folder, onProgress);
+}
+
+function rehostProductImgUrl() {
+  const url = document.getElementById('p-img').value.trim();
+  if (!url) { showToast('Isi URL gambar dulu!', 'error'); return; }
+  const btn = document.getElementById('p-img-rehost-btn');
+  const preview = document.getElementById('p-img-preview');
+  btn.disabled = true; btn.textContent = '⏳ 0%';
+  rehostExternalImage(url, 'product_images', pct => { btn.textContent = `⏳ ${pct}%`; })
+    .then(newUrl => {
+      document.getElementById('p-img-data').value = newUrl;
+      document.getElementById('p-img').value = '';
+      preview.innerHTML = `<img src="${newUrl}">`;
+      showToast('Gambar berhasil disalin ke server!', 'success');
+    })
+    .catch(err => showToast(err.message || 'Gagal menyalin gambar!', 'error'))
+    .finally(() => { btn.disabled = false; btn.textContent = '📥 Simpan ke Server'; });
+}
+
+// Migrasi massal: cari semua produk yang gambarnya masih dari domain luar
+// (bukan firebasestorage sendiri) lalu upload ulang satu-satu ke storage sendiri.
+function isExternalImgUrl(url) {
+  return !!url && /^https?:\/\//i.test(url) && !/firebasestorage\.(app|googleapis\.com)/i.test(url);
+}
+
+async function migrateExternalProductImages() {
+  if (!isDeveloper()) { showToast('Hanya developer yang bisa mengatur ini!', 'error'); return; }
+  const targets = products.filter(p => isExternalImgUrl(p.img));
+  const statusEl = document.getElementById('img-migrate-status');
+  const btn = document.getElementById('img-migrate-btn');
+  if (!targets.length) {
+    statusEl.textContent = 'Tidak ada gambar dari hosting luar — semua sudah aman.';
+    return;
+  }
+  btn.disabled = true;
+  let done = 0, failed = 0;
+  for (const p of targets) {
+    statusEl.textContent = `Memproses ${done + failed + 1}/${targets.length}: ${p.name}...`;
+    try {
+      const newUrl = await rehostExternalImage(p.img, 'product_images');
+      const idx = products.findIndex(x => x.id === p.id);
+      if (idx >= 0) products[idx] = { ...products[idx], img: newUrl };
+      done++;
+    } catch (err) {
+      failed++;
+    }
+  }
+  renderAll();
+  await save();
+  statusEl.textContent = `Selesai! ${done} gambar berhasil dipindah, ${failed} gagal (link mati/tidak bisa diakses).`;
+  logActivity('Migrasi Gambar Produk', `${done} berhasil, ${failed} gagal dari ${targets.length} produk`);
+  showToast(`Migrasi selesai: ${done} berhasil${failed ? `, ${failed} gagal` : ''}.`, failed ? 'warning' : 'success');
+  btn.disabled = false;
+}
+
+function rehostImgchangeUrl() {
+  const url = document.getElementById('imgchange-url').value.trim();
+  if (!url) { showToast('Isi URL gambar dulu!', 'error'); return; }
+  const btn = document.getElementById('imgchange-rehost-btn');
+  const preview = document.getElementById('imgchange-preview');
+  btn.disabled = true; btn.textContent = '⏳ 0%';
+  rehostExternalImage(url, 'product_images', pct => { btn.textContent = `⏳ ${pct}%`; })
+    .then(newUrl => {
+      document.getElementById('imgchange-data').value = newUrl;
+      document.getElementById('imgchange-url').value = '';
+      preview.innerHTML = `<img src="${newUrl}">`;
+      showToast('Gambar berhasil disalin ke server!', 'success');
+    })
+    .catch(err => showToast(err.message || 'Gagal menyalin gambar!', 'error'))
+    .finally(() => { btn.disabled = false; btn.textContent = '📥 Simpan ke Server'; });
+}
+
 function uploadImageToStorage(file, folder, onProgress) {
   return new Promise((resolve, reject) => {
     if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
       reject(new Error(`Ukuran gambar max ${MAX_IMAGE_MB}MB!`));
       return;
     }
-    compressImage(file).then(finalFile => {
-      const safeName = Date.now() + '_' + finalFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const ref = storage.ref().child(`${folder}/${safeName}`);
-      const task = ref.put(finalFile);
-      const timer = setTimeout(() => {
-        task.cancel();
-        reject(new Error('Upload timeout, koneksi terlalu lambat. Coba lagi.'));
-      }, UPLOAD_TIMEOUT_MS);
+    let settled = false;
+    const finish = (fn, arg) => { if (settled) return; settled = true; clearTimeout(timer); fn(arg); };
+    const timer = setTimeout(() => {
+      finish(reject, new Error('Upload timeout, koneksi/proses terlalu lambat. Coba lagi.'));
+    }, UPLOAD_TIMEOUT_MS);
+
+    const doUpload = finalFile => {
+      let ref, task;
+      try {
+        const safeName = Date.now() + '_' + finalFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        ref = storage.ref().child(`${folder}/${safeName}`);
+        task = ref.put(finalFile);
+      } catch (err) {
+        finish(reject, err);
+        return;
+      }
       task.on('state_changed', snap => {
         if (onProgress && snap.totalBytes) {
           onProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100));
         }
       }, err => {
-        clearTimeout(timer);
-        reject(err);
+        finish(reject, err);
       }, async () => {
-        clearTimeout(timer);
         try {
           const url = await task.snapshot.ref.getDownloadURL();
-          resolve(url);
+          finish(resolve, url);
         } catch (err) {
-          reject(err);
+          finish(reject, err);
         }
       });
-    });
+    };
+
+    // Kompresi dikasih batas 8 detik — kalau proses kompresi macet/error di browser tertentu
+    // (pernah terjadi di sebagian WebView Android), langsung fallback upload file ASLI
+    // tanpa dikompres, supaya proses upload TIDAK PERNAH nyangkut hanya gara-gara langkah ini.
+    Promise.race([
+      compressImage(file).catch(() => file),
+      new Promise(res => setTimeout(() => res(file), 8000)),
+    ]).then(doUpload);
   });
 }
 
