@@ -1243,10 +1243,10 @@
       <div class="page-section" id="page-order">
         <div class="section-header">
           <div class="section-title">Manajemen Order</div>
-          <button class="btn btn-primary admin-only-btn" onclick="openNewOrderModal()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Order Baru
-          </button>
+        </div>
+        <div class="cat-tabs" id="order-type-tabs">
+          <div class="cat-tab active" onclick="filterOrderType('biz',this)">🏪 Order Bisnis</div>
+          <div class="cat-tab" onclick="filterOrderType('illegal',this)">🔫 Order Checkout</div>
         </div>
         <div class="cat-tabs">
           <div class="cat-tab active" onclick="filterOrder('all',this)">📋 Semua</div>
@@ -1256,9 +1256,9 @@
           <div class="cat-tab" onclick="filterOrder('selesai',this)">🎯 Selesai</div>
         </div>
         <div class="table-wrap">
-          <div class="table-top"><span class="table-title">📋 Daftar Order</span></div>
+          <div class="table-top"><span class="table-title" id="order-table-title">🏪 Daftar Order Bisnis</span></div>
           <table>
-            <thead><tr><th>ID</th><th>Member</th><th>Kelompok</th><th>Produk</th><th>Jenis</th><th>Qty</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
+            <thead><tr><th>ID</th><th>Member</th><th id="order-kelompok-th">Kelompok</th><th>Produk</th><th>Qty</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
             <tbody id="order-tbody"></tbody>
           </table>
         </div>
@@ -1516,67 +1516,6 @@
   </div>
 </div>
 
-<!-- NEW ORDER (Admin) -->
-<div class="modal-overlay" id="modal-order">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">ORDER BARU</div>
-      <button class="modal-close" onclick="closeModal('modal-order')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <div id="order-member-info" style="display:none;margin-bottom:14px;padding:10px 12px;background:rgba(90,160,224,0.08);border:1px solid rgba(90,160,224,0.2);border-radius:9px">
-        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:5px" id="order-member-info-label">ORDER SEBAGAI</div>
-        <div class="member-tag">
-          <span class="m-avatar" id="order-member-avatar">A</span>
-          <span id="order-member-name" style="font-size:13px;color:#fff">Admin</span>
-          <span style="color:var(--muted);font-size:10px;margin-left:4px" id="order-member-info-hint">— nama akan otomatis tercatat</span>
-        </div>
-      </div>
-      <div id="order-buyer-manual" class="form-row single">
-        <div class="form-group">
-          <label class="form-label">Nama Pembeli</label>
-          <input class="form-input" id="o-buyer" placeholder="Nama karakter RP...">
-        </div>
-      </div>
-      <div id="order-kelompok-field" class="form-row single" style="display:none">
-        <div class="form-group">
-          <label class="form-label">Nama Kelompok</label>
-          <input class="form-input" id="o-kelompok" placeholder="cth: MPL">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Produk</label>
-          <select class="form-select" id="o-product" onchange="updateOrderPrice()">
-            <option value="">-- Pilih Produk --</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Jumlah</label>
-          <input class="form-input" id="o-qty" type="number" value="1" min="1" oninput="updateOrderPrice()">
-        </div>
-      </div>
-      <div class="form-row single">
-        <div class="form-group">
-          <label class="form-label">Total Harga</label>
-          <input class="form-input" id="o-total" readonly style="color:var(--accent-blue);font-family:var(--mono)">
-        </div>
-      </div>
-      <div class="form-row single">
-        <div class="form-group">
-          <label class="form-label">Catatan</label>
-          <textarea class="form-textarea" id="o-note" placeholder="Lokasi drop, waktu, dll..."></textarea>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-order')">Batal</button>
-      <button class="btn btn-primary" onclick="saveOrder()">Buat Order</button>
-    </div>
-  </div>
-</div>
 
 <!-- EDIT PRICE -->
 <div class="modal-overlay" id="modal-price">
@@ -1629,6 +1568,12 @@
             <div style="font-family:var(--display);font-size:14px;font-weight:700;color:#fff" id="mo-name">-</div>
             <div style="font-family:var(--mono);font-size:11px;color:var(--success)" id="mo-price">-</div>
           </div>
+        </div>
+      </div>
+      <div id="mo-kelompok-field" class="form-row single" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Nama Kelompok</label>
+          <input class="form-input" id="mo-kelompok" placeholder="cth: MPL">
         </div>
       </div>
       <div class="form-row">
@@ -1899,6 +1844,7 @@ let state = {
   currentUser: null,
   currentPage: 'overview',
   orderFilter: 'all',
+  orderTypeFilter: 'biz',
   bisnisFilter: 'all',
   bizFilter: 'all',
   checkoutFilter: 'all',
@@ -3260,9 +3206,25 @@ function renderBizTable() {
 // ════════════════════════════════════
 //  ORDER TABLE
 // ════════════════════════════════════
+function filterOrderType(t, el) {
+  state.orderTypeFilter = t;
+  document.querySelectorAll('#order-type-tabs .cat-tab').forEach(tab => tab.classList.remove('active'));
+  el.classList.add('active');
+  const kelompokTh = document.getElementById('order-kelompok-th');
+  const title = document.getElementById('order-table-title');
+  if (t === 'biz') {
+    kelompokTh.style.display = '';
+    title.textContent = '🏪 Daftar Order Bisnis';
+  } else {
+    kelompokTh.style.display = 'none';
+    title.textContent = '🔫 Daftar Order Checkout';
+  }
+  renderOrderTable();
+}
+
 function filterOrder(s, el) {
   state.orderFilter = s;
-  document.querySelectorAll('#page-order .cat-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#page-order .cat-tabs:not(#order-type-tabs) .cat-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   renderOrderTable();
 }
@@ -3270,21 +3232,25 @@ function filterOrder(s, el) {
 function renderOrderTable() {
   const tb = document.getElementById('order-tbody');
   if (!tb) return;
-  let filtered = [...orders].reverse();
+  const orderType = state.orderTypeFilter || 'biz';
+  let filtered = [...orders].reverse().filter(o => getOrderType(o) === orderType);
   if (state.orderFilter !== 'all') filtered = filtered.filter(o => o.status === state.orderFilter);
   if (isMember()) filtered = filtered.filter(o => o.buyerUsername === state.currentUser.username);
+  const colspan = orderType === 'biz' ? 8 : 7;
   if (!filtered.length) {
-    tb.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📋</div><p>TIDAK ADA ORDER</p></div></td></tr>`;
+    tb.innerHTML = `<tr><td colspan="${colspan}"><div class="empty-state"><div class="empty-icon">📋</div><p>TIDAK ADA ORDER</p></div></td></tr>`;
     return;
   }
   tb.innerHTML = filtered.map(o => {
     const prod = products.find(p => p.id === o.productId);
+    const kelompokCell = orderType === 'biz'
+      ? `<td>${o.kelompok ? `<span style="font-family:var(--mono);font-size:11px;color:var(--accent-blue)">🏳️ ${o.kelompok}</span>` : '—'}</td>`
+      : '';
     return `<tr>
       <td><span style="font-family:var(--mono);font-size:10px;color:var(--muted)">#${String(o.id).padStart(4, '0')}</span></td>
       <td>${memberTag(o.buyer, o.buyerUsername)}</td>
-      <td>${o.kelompok ? `<span style="font-family:var(--mono);font-size:11px;color:var(--accent-blue)">🏳️ ${o.kelompok}</span>` : '—'}</td>
+      ${kelompokCell}
       <td>${prod ? prod.icon + ' ' + prod.name : '?'}</td>
-      <td>${typeTag(getOrderType(o))}</td>
       <td style="font-family:var(--mono)">${o.qty}x</td>
       <td style="font-family:var(--mono);color:var(--accent-blue)">${fmt(o.total)}</td>
       <td>${statusBadge(o.status)}</td>
@@ -3569,84 +3535,6 @@ function saveImgChange() {
 // ════════════════════════════════════
 //  ORDERS
 // ════════════════════════════════════
-function toggleOrderFormForProductType() {
-  const pid = parseInt(document.getElementById('o-product').value);
-  const prod = products.find(p => p.id === pid);
-  const isBiz = prod && prod.type === 'biz';
-  const manualDiv = document.getElementById('order-buyer-manual');
-  const memberInfo = document.getElementById('order-member-info');
-  const kelompokField = document.getElementById('order-kelompok-field');
-  const infoLabel = document.getElementById('order-member-info-label');
-  const infoHint = document.getElementById('order-member-info-hint');
-
-  kelompokField.style.display = isBiz ? '' : 'none';
-
-  if (isBiz) {
-    // Order bisnis: yang tercatat sebagai "Member" selalu member yang login & input order-nya,
-    // bukan nama bebas — nama kelompok pembeli dicatat terpisah di field Nama Kelompok.
-    manualDiv.style.display = 'none';
-    memberInfo.style.display = '';
-    document.getElementById('order-member-avatar').innerHTML = avatarContent(state.currentUser);
-    document.getElementById('order-member-name').textContent = state.currentUser.username;
-    infoLabel.textContent = 'MEMBER YANG INPUT ORDER';
-    infoHint.textContent = '— member yang membuat order ini';
-  } else {
-    infoLabel.textContent = 'ORDER SEBAGAI';
-    infoHint.textContent = '— nama akan otomatis tercatat';
-    if (isAdmin()) {
-      manualDiv.style.display = '';
-      memberInfo.style.display = 'none';
-    } else {
-      manualDiv.style.display = 'none';
-      memberInfo.style.display = '';
-      document.getElementById('order-member-avatar').innerHTML = avatarContent(state.currentUser);
-      document.getElementById('order-member-name').textContent = state.currentUser.username;
-    }
-  }
-}
-
-function openNewOrderModal() {
-  populateOrderProductSelect();
-  const manualDiv = document.getElementById('order-buyer-manual');
-  const memberInfo = document.getElementById('order-member-info');
-  if (isAdmin()) {
-    manualDiv.style.display = '';
-    memberInfo.style.display = 'none';
-    document.getElementById('o-buyer').value = '';
-  } else {
-    manualDiv.style.display = 'none';
-    memberInfo.style.display = '';
-    document.getElementById('order-member-avatar').innerHTML = avatarContent(state.currentUser);
-    document.getElementById('order-member-name').textContent = state.currentUser.username;
-  }
-  document.getElementById('order-kelompok-field').style.display = 'none';
-  document.getElementById('o-kelompok').value = '';
-  document.getElementById('o-product').value = '';
-  document.getElementById('o-qty').value = 1;
-  document.getElementById('o-total').value = '';
-  document.getElementById('o-note').value = '';
-  openModal('modal-order');
-}
-
-function quickOrder(pid) {
-  populateOrderProductSelect();
-  document.getElementById('o-product').value = pid;
-  document.getElementById('o-qty').value = 1;
-  document.getElementById('o-note').value = '';
-  const manualDiv = document.getElementById('order-buyer-manual');
-  const memberInfo = document.getElementById('order-member-info');
-  if (isAdmin()) {
-    manualDiv.style.display = '';
-    memberInfo.style.display = 'none';
-    document.getElementById('o-buyer').value = '';
-  } else {
-    manualDiv.style.display = 'none';
-    memberInfo.style.display = '';
-  }
-  updateOrderPrice();
-  openModal('modal-order');
-}
-
 function openMemberOrder(pid) {
   const p = products.find(x => x.id === pid);
   if (!p) return;
@@ -3660,6 +3548,9 @@ function openMemberOrder(pid) {
   document.getElementById('member-order-title').textContent = '🛒 BELI — ' + p.name;
   document.getElementById('mo-qty').value = 1;
   document.getElementById('mo-note').value = '';
+  const kelompokField = document.getElementById('mo-kelompok-field');
+  kelompokField.style.display = p.type === 'biz' ? '' : 'none';
+  document.getElementById('mo-kelompok').value = '';
   updateMoPrice();
   openModal('modal-member-order');
 }
@@ -3678,11 +3569,17 @@ function saveMemberOrder() {
   const prod = products.find(p => p.id === pid);
   if (!prod) return;
   if (qty > prod.stock) { showToast(`Stok tidak cukup! Tersedia: ${prod.stock}`, 'error'); return; }
+  let kelompok = null;
+  if (prod.type === 'biz') {
+    kelompok = document.getElementById('mo-kelompok').value.trim();
+    if (!kelompok) { showToast('Nama kelompok harus diisi!', 'error'); return; }
+  }
   const total = prod.sell * qty;
   orders.push({
     id: nextOrderId++,
     buyer: state.currentUser.username,
     buyerUsername: state.currentUser.username,
+    kelompok,
     productId: prod.id,
     category: prod.cat,
     type: prod.type || 'illegal',
@@ -3690,54 +3587,10 @@ function saveMemberOrder() {
     status: 'pending',
     createdAt: new Date().toISOString(),
   });
-  logActivity('Buat Order', `${state.currentUser.username} — ${prod.name} x${qty}`);
+  logActivity('Buat Order', `${state.currentUser.username}${kelompok ? ' (' + kelompok + ')' : ''} — ${prod.name} x${qty}`);
   sendDiscordOrderNotif(orders[orders.length - 1], prod);
   renderAll(); closeModal('modal-member-order');
   showToast(`Order berhasil dibuat! Menunggu konfirmasi admin.`, 'success');
-}
-
-function updateOrderPrice() {
-  toggleOrderFormForProductType();
-  const pid = parseInt(document.getElementById('o-product').value);
-  const qty = parseInt(document.getElementById('o-qty').value) || 1;
-  const prod = products.find(p => p.id === pid);
-  document.getElementById('o-total').value = prod ? fmt(prod.sell * qty) : '';
-}
-
-function saveOrder() {
-  const pid = parseInt(document.getElementById('o-product').value);
-  const prod = products.find(p => p.id === pid);
-  if (!prod) { showToast('Pilih produk!', 'error'); return; }
-  const isBiz = prod.type === 'biz';
-
-  let buyer, buyerUsername, kelompok = null;
-  if (isBiz) {
-    // Order bisnis: member yang input selalu user yang sedang login.
-    buyer = state.currentUser.username;
-    buyerUsername = state.currentUser.username;
-    kelompok = document.getElementById('o-kelompok').value.trim();
-    if (!kelompok) { showToast('Nama kelompok harus diisi!', 'error'); return; }
-  } else {
-    const manualDiv = document.getElementById('order-buyer-manual');
-    if (isAdmin() && manualDiv.style.display !== 'none') {
-      buyer = document.getElementById('o-buyer').value.trim();
-      if (!buyer) { showToast('Nama pembeli harus diisi!', 'error'); return; }
-      buyerUsername = null;
-    } else {
-      buyer = state.currentUser.username;
-      buyerUsername = state.currentUser.username;
-    }
-  }
-
-  const qty = parseInt(document.getElementById('o-qty').value) || 1;
-  const note = document.getElementById('o-note').value.trim();
-  if (qty > prod.stock) { showToast(`Stok tidak cukup! Tersedia: ${prod.stock}`, 'error'); return; }
-  const total = prod.sell * qty;
-  orders.push({ id: nextOrderId++, buyer, buyerUsername, kelompok, productId: prod.id, category: prod.cat, type: prod.type || 'illegal', qty, total, note, status: 'pending', createdAt: new Date().toISOString() });
-  logActivity('Buat Order', `${buyer}${kelompok ? ' (' + kelompok + ')' : ''} — ${prod.name} x${qty}`);
-  sendDiscordOrderNotif(orders[orders.length - 1], prod);
-  renderAll(); closeModal('modal-order');
-  showToast(`Order dari ${buyer} berhasil dibuat!`, 'success');
 }
 
 // ════════════════════════════════════
