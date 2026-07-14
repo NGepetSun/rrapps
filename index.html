@@ -3496,8 +3496,8 @@ function buildInvSlot(p, admin) {
       <button title="Edit produk" onclick="event.stopPropagation();openEditProduct(${p.id})">✏️</button>
       <button title="Ganti gambar" onclick="event.stopPropagation();openImgChange(${p.id})">📷</button>
       ${moneyItem
-        ? `<button title="Deposit" onclick="event.stopPropagation();openDepoWd(${p.id},'deposit')">🔺</button>
-      <button title="Withdraw" onclick="event.stopPropagation();openDepoWd(${p.id},'withdraw')">🔻</button>`
+        ? `<button title="Deposit" onclick="event.stopPropagation();openDepoWd(${p.id},'deposit')">🟢️</button>
+      <button title="Withdraw" onclick="event.stopPropagation();openDepoWd(${p.id},'withdraw')">🔴</button>`
         : `<button title="Edit harga/stok" onclick="event.stopPropagation();openEditPrice(${p.id})">💲</button>`}
       <button title="Hapus" class="danger" onclick="event.stopPropagation();confirmDelete(${p.id})">🗑</button>
     </div>` : '';
