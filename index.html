@@ -1258,7 +1258,7 @@
         <div class="table-wrap">
           <div class="table-top"><span class="table-title">📋 Daftar Order</span></div>
           <table>
-            <thead><tr><th>ID</th><th>Member</th><th>Produk</th><th>Jenis</th><th>Qty</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
+            <thead><tr><th>ID</th><th>Member</th><th>Kelompok</th><th>Produk</th><th>Jenis</th><th>Qty</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
             <tbody id="order-tbody"></tbody>
           </table>
         </div>
@@ -1527,17 +1527,23 @@
     </div>
     <div class="modal-body">
       <div id="order-member-info" style="display:none;margin-bottom:14px;padding:10px 12px;background:rgba(90,160,224,0.08);border:1px solid rgba(90,160,224,0.2);border-radius:9px">
-        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:5px">ORDER SEBAGAI</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:5px" id="order-member-info-label">ORDER SEBAGAI</div>
         <div class="member-tag">
           <span class="m-avatar" id="order-member-avatar">A</span>
           <span id="order-member-name" style="font-size:13px;color:#fff">Admin</span>
-          <span style="color:var(--muted);font-size:10px;margin-left:4px">— nama akan otomatis tercatat</span>
+          <span style="color:var(--muted);font-size:10px;margin-left:4px" id="order-member-info-hint">— nama akan otomatis tercatat</span>
         </div>
       </div>
       <div id="order-buyer-manual" class="form-row single">
         <div class="form-group">
           <label class="form-label">Nama Pembeli</label>
           <input class="form-input" id="o-buyer" placeholder="Nama karakter RP...">
+        </div>
+      </div>
+      <div id="order-kelompok-field" class="form-row single" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Nama Kelompok</label>
+          <input class="form-input" id="o-kelompok" placeholder="cth: MPL">
         </div>
       </div>
       <div class="form-row">
@@ -2399,14 +2405,19 @@ function catLabelFor(prod) {
 
 function sendDiscordOrderNotif(order, prod) {
   if (!discordOrderWebhookEnabled || !discordOrderWebhookUrl) return;
+  const fields = [
+    { name: order.kelompok ? '👤 Member Input' : '👤 Pemesan', value: order.buyer || '-', inline: true },
+  ];
+  if (order.kelompok) fields.push({ name: '🏳️ Kelompok', value: order.kelompok, inline: true });
+  fields.push(
+    { name: '🏷 Jenis Barang', value: catLabelFor(prod || {}), inline: true },
+    { name: '🔢 Jumlah', value: String(order.qty), inline: true },
+    { name: '💰 Harga', value: fmt(order.total), inline: true },
+  );
   const embed = {
     title: `🛒 ${prod?.name || 'Order Baru'}`,
     color: 0xfaa61a,
-    fields: [
-      { name: '👤 Pemesan', value: order.buyer || '-', inline: true },
-      { name: '🏷 Jenis Barang', value: catLabelFor(prod || {}), inline: true },
-      { name: '💰 Harga', value: fmt(order.total), inline: true },
-    ],
+    fields,
     timestamp: order.createdAt || new Date().toISOString(),
   };
   // Gambar hanya dipasang kalau berupa URL http(s) valid (bukan base64/data URI,
@@ -3263,7 +3274,7 @@ function renderOrderTable() {
   if (state.orderFilter !== 'all') filtered = filtered.filter(o => o.status === state.orderFilter);
   if (isMember()) filtered = filtered.filter(o => o.buyerUsername === state.currentUser.username);
   if (!filtered.length) {
-    tb.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div><p>TIDAK ADA ORDER</p></div></td></tr>`;
+    tb.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📋</div><p>TIDAK ADA ORDER</p></div></td></tr>`;
     return;
   }
   tb.innerHTML = filtered.map(o => {
@@ -3271,6 +3282,7 @@ function renderOrderTable() {
     return `<tr>
       <td><span style="font-family:var(--mono);font-size:10px;color:var(--muted)">#${String(o.id).padStart(4, '0')}</span></td>
       <td>${memberTag(o.buyer, o.buyerUsername)}</td>
+      <td>${o.kelompok ? `<span style="font-family:var(--mono);font-size:11px;color:var(--accent-blue)">🏳️ ${o.kelompok}</span>` : '—'}</td>
       <td>${prod ? prod.icon + ' ' + prod.name : '?'}</td>
       <td>${typeTag(getOrderType(o))}</td>
       <td style="font-family:var(--mono)">${o.qty}x</td>
@@ -3557,6 +3569,42 @@ function saveImgChange() {
 // ════════════════════════════════════
 //  ORDERS
 // ════════════════════════════════════
+function toggleOrderFormForProductType() {
+  const pid = parseInt(document.getElementById('o-product').value);
+  const prod = products.find(p => p.id === pid);
+  const isBiz = prod && prod.type === 'biz';
+  const manualDiv = document.getElementById('order-buyer-manual');
+  const memberInfo = document.getElementById('order-member-info');
+  const kelompokField = document.getElementById('order-kelompok-field');
+  const infoLabel = document.getElementById('order-member-info-label');
+  const infoHint = document.getElementById('order-member-info-hint');
+
+  kelompokField.style.display = isBiz ? '' : 'none';
+
+  if (isBiz) {
+    // Order bisnis: yang tercatat sebagai "Member" selalu member yang login & input order-nya,
+    // bukan nama bebas — nama kelompok pembeli dicatat terpisah di field Nama Kelompok.
+    manualDiv.style.display = 'none';
+    memberInfo.style.display = '';
+    document.getElementById('order-member-avatar').innerHTML = avatarContent(state.currentUser);
+    document.getElementById('order-member-name').textContent = state.currentUser.username;
+    infoLabel.textContent = 'MEMBER YANG INPUT ORDER';
+    infoHint.textContent = '— member yang membuat order ini';
+  } else {
+    infoLabel.textContent = 'ORDER SEBAGAI';
+    infoHint.textContent = '— nama akan otomatis tercatat';
+    if (isAdmin()) {
+      manualDiv.style.display = '';
+      memberInfo.style.display = 'none';
+    } else {
+      manualDiv.style.display = 'none';
+      memberInfo.style.display = '';
+      document.getElementById('order-member-avatar').innerHTML = avatarContent(state.currentUser);
+      document.getElementById('order-member-name').textContent = state.currentUser.username;
+    }
+  }
+}
+
 function openNewOrderModal() {
   populateOrderProductSelect();
   const manualDiv = document.getElementById('order-buyer-manual');
@@ -3571,6 +3619,8 @@ function openNewOrderModal() {
     document.getElementById('order-member-avatar').innerHTML = avatarContent(state.currentUser);
     document.getElementById('order-member-name').textContent = state.currentUser.username;
   }
+  document.getElementById('order-kelompok-field').style.display = 'none';
+  document.getElementById('o-kelompok').value = '';
   document.getElementById('o-product').value = '';
   document.getElementById('o-qty').value = 1;
   document.getElementById('o-total').value = '';
@@ -3647,6 +3697,7 @@ function saveMemberOrder() {
 }
 
 function updateOrderPrice() {
+  toggleOrderFormForProductType();
   const pid = parseInt(document.getElementById('o-product').value);
   const qty = parseInt(document.getElementById('o-qty').value) || 1;
   const prod = products.find(p => p.id === pid);
@@ -3654,25 +3705,36 @@ function updateOrderPrice() {
 }
 
 function saveOrder() {
-  let buyer, buyerUsername;
-  const manualDiv = document.getElementById('order-buyer-manual');
-  if (isAdmin() && manualDiv.style.display !== 'none') {
-    buyer = document.getElementById('o-buyer').value.trim();
-    if (!buyer) { showToast('Nama pembeli harus diisi!', 'error'); return; }
-    buyerUsername = null;
-  } else {
-    buyer = state.currentUser.username;
-    buyerUsername = state.currentUser.username;
-  }
   const pid = parseInt(document.getElementById('o-product').value);
-  const qty = parseInt(document.getElementById('o-qty').value) || 1;
-  const note = document.getElementById('o-note').value.trim();
   const prod = products.find(p => p.id === pid);
   if (!prod) { showToast('Pilih produk!', 'error'); return; }
+  const isBiz = prod.type === 'biz';
+
+  let buyer, buyerUsername, kelompok = null;
+  if (isBiz) {
+    // Order bisnis: member yang input selalu user yang sedang login.
+    buyer = state.currentUser.username;
+    buyerUsername = state.currentUser.username;
+    kelompok = document.getElementById('o-kelompok').value.trim();
+    if (!kelompok) { showToast('Nama kelompok harus diisi!', 'error'); return; }
+  } else {
+    const manualDiv = document.getElementById('order-buyer-manual');
+    if (isAdmin() && manualDiv.style.display !== 'none') {
+      buyer = document.getElementById('o-buyer').value.trim();
+      if (!buyer) { showToast('Nama pembeli harus diisi!', 'error'); return; }
+      buyerUsername = null;
+    } else {
+      buyer = state.currentUser.username;
+      buyerUsername = state.currentUser.username;
+    }
+  }
+
+  const qty = parseInt(document.getElementById('o-qty').value) || 1;
+  const note = document.getElementById('o-note').value.trim();
   if (qty > prod.stock) { showToast(`Stok tidak cukup! Tersedia: ${prod.stock}`, 'error'); return; }
   const total = prod.sell * qty;
-  orders.push({ id: nextOrderId++, buyer, buyerUsername, productId: prod.id, category: prod.cat, type: prod.type || 'illegal', qty, total, note, status: 'pending', createdAt: new Date().toISOString() });
-  logActivity('Buat Order', `${buyer} — ${prod.name} x${qty}`);
+  orders.push({ id: nextOrderId++, buyer, buyerUsername, kelompok, productId: prod.id, category: prod.cat, type: prod.type || 'illegal', qty, total, note, status: 'pending', createdAt: new Date().toISOString() });
+  logActivity('Buat Order', `${buyer}${kelompok ? ' (' + kelompok + ')' : ''} — ${prod.name} x${qty}`);
   sendDiscordOrderNotif(orders[orders.length - 1], prod);
   renderAll(); closeModal('modal-order');
   showToast(`Order dari ${buyer} berhasil dibuat!`, 'success');
@@ -4208,6 +4270,7 @@ function exportExcelData() {
       Produk: p ? p.name : '?',
       Jenis: getOrderType(o) === 'biz' ? 'Bisnis' : 'Brangkas (Ilegal)',
       Pembeli: o.buyerUsername || o.buyer || '',
+      Kelompok: o.kelompok || '',
       Qty: o.qty,
       Total: o.total,
       Status: o.status,
