@@ -624,6 +624,8 @@
   .tx-badge.ok{background:rgba(74,216,168,0.15);color:#4ad8a8;}
   .tx-badge.proc{background:rgba(247,185,85,0.15);color:#f7b955;}
   .tx-badge.bad{background:rgba(224,99,122,0.15);color:#e0637a;}
+  .tx-badge.info{background:rgba(90,160,224,0.15);color:#5aa0e0;}
+  .tx-badge.neutral{background:rgba(255,255,255,0.1);color:#fff;}
   .tx-badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
   @media (max-width:900px){
     .gstat-grid{grid-template-columns:repeat(2,1fr);}
@@ -1299,8 +1301,8 @@
 
       <!-- ── ORDER ── -->
       <div class="page-section" id="page-order">
-        <div class="section-header">
-          <div class="section-title">Manajemen Order</div>
+        <div class="stat-header" style="margin-bottom:18px">
+          <h2>Manajemen Order</h2>
         </div>
         <div class="cat-tabs" id="order-type-tabs">
           <div class="cat-tab active" onclick="filterOrderType('biz',this)">🏪 Order Bisnis</div>
@@ -1313,12 +1315,14 @@
           <div class="cat-tab" onclick="filterOrder('acc_barang',this)">📦 ACC Barang</div>
           <div class="cat-tab" onclick="filterOrder('selesai',this)">🎯 Selesai</div>
         </div>
-        <div class="table-wrap">
-          <div class="table-top"><span class="table-title" id="order-table-title">🏪 Daftar Order Bisnis</span></div>
-          <table>
-            <thead><tr><th>ID</th><th>Member</th><th id="order-kelompok-th">Kelompok</th><th>Produk</th><th>Qty</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
-            <tbody id="order-tbody"></tbody>
-          </table>
+        <div class="payment-card">
+          <h3><span id="order-table-title">🏪 Daftar Order Bisnis</span></h3>
+          <div style="overflow-x:auto">
+            <table class="tx-table">
+              <thead><tr><th>ID</th><th>Member</th><th id="order-kelompok-th">Kelompok</th><th>Produk</th><th>Qty</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
+              <tbody id="order-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -1978,6 +1982,69 @@ async function sbUpdatePanelFields(fields) {
   return merged;
 }
 
+// Sama seperti sbUpdatePanelFields, tapi untuk tabel 'products'. Dipakai supaya perubahan
+// harga/stok/deposit-withdraw dari satu sesi TIDAK ketimpa balik oleh sesi lain yang masih
+// pegang salinan produk lama di memori (mis. admin lain buka tab lama lalu approve order,
+// yang otomatis re-save seluruh array produk versi lama). Alurnya: ambil data produk
+// TERBARU dari server -> terapkan perubahan sesi ini di atas data terbaru itu -> simpan.
+async function saveProductsOnly(mutateFn) {
+  try {
+    const latest = await sbGetRow('products');
+    let list = latest ? (latest.list || []).slice() : products.slice();
+    list = mutateFn(list) || list;
+    products = list;
+    await sbSetRow('products', { list: products });
+    return true;
+  } catch (err) {
+    showFirebaseError(err);
+    return false;
+  }
+}
+
+// Sama seperti saveProductsOnly, tapi untuk tabel 'users' (member & admin).
+async function saveUsersOnly(mutateFn) {
+  try {
+    const latest = await sbGetRow('users');
+    let list = latest ? (latest.list || []).slice() : users.slice();
+    list = mutateFn(list) || list;
+    users = list;
+    await sbSetRow('users', { list: users });
+    return true;
+  } catch (err) {
+    showFirebaseError(err);
+    return false;
+  }
+}
+
+// Sama seperti saveProductsOnly, tapi untuk field-field di dalam tabel 'panel'
+// (orders, setoran, log aktivitas, kategori, dst). mutateFn menerima data PANEL
+// TERBARU dari server dan mengembalikan object berisi field yang mau diubah saja —
+// field lain otomatis dipertahankan dari server, tidak ditimpa salinan lokal yang basi.
+async function savePanelSafe(mutateFn) {
+  try {
+    const latest = (await sbGetRow('panel')) || {};
+    const patch = mutateFn(latest) || {};
+    const merged = { ...latest, ...patch };
+    await sbSetRow('panel', merged);
+    // sinkronkan balik ke variabel lokal sesi ini biar tidak basi utk aksi berikutnya
+    orders = merged.orders || [];
+    setorItems = merged.setorItems || setorItems;
+    setoran = merged.setoran || [];
+    dataSheets = merged.dataSheets ? deserializeDataSheets(merged.dataSheets) : dataSheets;
+    activityLog = merged.activityLog || [];
+    illegalCategories = (merged.illegalCategories && merged.illegalCategories.length) ? merged.illegalCategories : illegalCategories;
+    checkoutHiddenCats = merged.checkoutHiddenCats || checkoutHiddenCats;
+    discordLogWebhookUrl = merged.discordLogWebhookUrl !== undefined ? merged.discordLogWebhookUrl : discordLogWebhookUrl;
+    discordLogWebhookEnabled = merged.discordLogWebhookEnabled !== undefined ? !!merged.discordLogWebhookEnabled : discordLogWebhookEnabled;
+    discordOrderWebhookUrl = merged.discordOrderWebhookUrl !== undefined ? merged.discordOrderWebhookUrl : discordOrderWebhookUrl;
+    discordOrderWebhookEnabled = merged.discordOrderWebhookEnabled !== undefined ? !!merged.discordOrderWebhookEnabled : discordOrderWebhookEnabled;
+    return true;
+  } catch (err) {
+    showFirebaseError(err);
+    return false;
+  }
+}
+
 // ════════════════════════════════════
 //  STATE
 // ════════════════════════════════════
@@ -2451,17 +2518,32 @@ function save() {
 
 function logActivity(action, detail) {
   const entry = {
-    id: nextLogId++,
     time: new Date().toISOString(),
     user: state.currentUser?.username || 'system',
     role: state.currentUser?.role || '-',
     action,
     detail: detail || '',
   };
+  // Tampilkan optimis di lokal dulu biar UI langsung update (id sementara, dikoreksi setelah tersimpan).
+  entry.id = nextLogId++;
   activityLog.push(entry);
   if (activityLog.length > 500) activityLog = activityLog.slice(-500);
-  sendDiscordLog(entry);
-  return save();
+
+  const writePromise = (async () => {
+    const ok = await savePanelSafe(latest => {
+      const freshLog = latest.activityLog || [];
+      entry.id = freshLog.length ? Math.max(...freshLog.map(x => x.id), 0) + 1 : 1;
+      let newLog = [...freshLog, entry];
+      if (newLog.length > 500) newLog = newLog.slice(-500);
+      return { activityLog: newLog };
+    });
+    if (ok) {
+      sendDiscordLog(entry);
+      renderLogPage();
+    }
+    return ok ? 'ok' : 'error';
+  })();
+  return withTimeout(writePromise, 8000);
 }
 
 // ── DISCORD WEBHOOK INTEGRATION ──
@@ -3203,6 +3285,17 @@ function txBadge(status) {
   return `<span class="tx-badge proc"><span class="dot"></span>PROSES</span>`;
 }
 
+function orderTxBadge(s) {
+  const map = {
+    pending: `<span class="tx-badge proc"><span class="dot"></span>⏳ PENDING</span>`,
+    acc_order: `<span class="tx-badge info"><span class="dot"></span>✅ ACC ORDER</span>`,
+    acc_barang: `<span class="tx-badge ok"><span class="dot"></span>📦 ACC BARANG</span>`,
+    selesai: `<span class="tx-badge neutral"><span class="dot"></span>🎯 SELESAI</span>`,
+    rejected: `<span class="tx-badge bad"><span class="dot"></span>❌ DITOLAK</span>`,
+  };
+  return map[s] || s;
+}
+
 function renderRecentOrders() {
   const wrap = document.getElementById('recent-orders-list');
   let list = isMember() ? orders.filter(o => o.buyerUsername === state.currentUser.username) : orders;
@@ -3409,7 +3502,7 @@ function renderOrderTable() {
       <td>${prod ? prod.icon + ' ' + prod.name : '?'}</td>
       <td style="font-family:var(--mono)">${o.qty}x</td>
       <td style="font-family:var(--mono);color:var(--accent-blue)">${fmt(o.total)}</td>
-      <td>${statusBadge(o.status)}</td>
+      <td>${orderTxBadge(o.status)}</td>
       <td>${isAdmin() ? `<div style="display:flex;gap:4px;flex-wrap:wrap">${orderActions(o)}</div>` : '—'}</td>
     </tr>`;
   }).join('');
@@ -3429,13 +3522,26 @@ function orderActions(o) {
   return btns;
 }
 
-function advanceOrder(oid, newStatus) {
-  const idx = orders.findIndex(o => o.id === oid);
-  if (idx < 0) return;
-  orders[idx].status = newStatus;
+async function advanceOrder(oid, newStatus) {
+  const okStatus = await savePanelSafe(latest => {
+    const freshOrders = latest.orders || [];
+    const idx = freshOrders.findIndex(o => o.id === oid);
+    if (idx < 0) return {};
+    const newOrders = freshOrders.slice();
+    newOrders[idx] = { ...newOrders[idx], status: newStatus };
+    return { orders: newOrders };
+  });
+  if (!okStatus) return;
+  const ord = orders.find(o => o.id === oid);
+  if (!ord) return;
   if (newStatus === 'acc_barang') {
-    const pidx = products.findIndex(p => p.id === orders[idx].productId);
-    if (pidx >= 0) products[pidx].stock = Math.max(0, products[pidx].stock - orders[idx].qty);
+    const productId = ord.productId;
+    const qty = ord.qty;
+    await saveProductsOnly(list => {
+      const pidx = list.findIndex(p => p.id === productId);
+      if (pidx >= 0) list[pidx] = { ...list[pidx], stock: Math.max(0, list[pidx].stock - qty) };
+      return list;
+    });
   }
   const labels = { acc_order: 'Order di-ACC ✅', acc_barang: 'Barang di-ACC 📦', selesai: 'Order selesai 🎯', rejected: 'Order ditolak ❌' };
   logActivity('Update Status Order', `Order #${String(oid).padStart(4, '0')} — ${labels[newStatus] || newStatus}`);
@@ -3496,8 +3602,8 @@ function buildInvSlot(p, admin) {
       <button title="Edit produk" onclick="event.stopPropagation();openEditProduct(${p.id})">✏️</button>
       <button title="Ganti gambar" onclick="event.stopPropagation();openImgChange(${p.id})">📷</button>
       ${moneyItem
-        ? `<button title="Deposit" onclick="event.stopPropagation();openDepoWd(${p.id},'deposit')">🟢️</button>
-      <button title="Withdraw" onclick="event.stopPropagation();openDepoWd(${p.id},'withdraw')">🔴</button>`
+        ? `<button title="Deposit" onclick="event.stopPropagation();openDepoWd(${p.id},'deposit')">🔺</button>
+      <button title="Withdraw" onclick="event.stopPropagation();openDepoWd(${p.id},'withdraw')">🔻</button>`
         : `<button title="Edit harga/stok" onclick="event.stopPropagation();openEditPrice(${p.id})">💲</button>`}
       <button title="Hapus" class="danger" onclick="event.stopPropagation();confirmDelete(${p.id})">🗑</button>
     </div>` : '';
@@ -3841,31 +3947,40 @@ async function saveProduct() {
   const btn = document.getElementById('p-save-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Menyimpan...'; }
 
-  // Kurangi stok bahan baku (sudah divalidasi cukup di atas)
-  if (craftEnabled) {
-    craftMaterials.forEach(m => {
-      const idx = products.findIndex(p => p.id === m.product.id);
-      if (idx >= 0) products[idx].stock -= m.qtyPerUnit * craftJumlah;
-    });
-  }
-
-  if (id) {
-    const idx = products.findIndex(p => p.id === parseInt(id));
-    if (idx >= 0) {
-      if (craftEnabled) {
-        // restock: gabungkan stok lama + hasil produksi baru, modal dirata-rata tertimbang
-        const prevStock = products[idx].stock;
-        const prevBuy = products[idx].buy;
-        const newTotalStock = prevStock + stock;
-        const newBuy = newTotalStock > 0 ? Math.round((prevStock * prevBuy + craftTotalModal) / newTotalStock) : buy;
-        products[idx] = { ...products[idx], name, type, cat, buy: newBuy, sell, stock: newTotalStock, icon, img, desc };
-      } else {
-        products[idx] = { ...products[idx], name, type, cat, buy, sell, stock, icon, img, desc };
-      }
+  // Semua perubahan (kurangi stok bahan baku + simpan/edit produk) diterapkan di atas
+  // data produk TERBARU dari server, bukan salinan lokal yang mungkin sudah basi —
+  // supaya tidak menimpa balik perubahan harga/stok dari sesi/admin lain.
+  const okSave = await saveProductsOnly(list => {
+    if (craftEnabled) {
+      craftMaterials.forEach(m => {
+        const midx = list.findIndex(p => p.id === m.product.id);
+        if (midx >= 0) list[midx] = { ...list[midx], stock: list[midx].stock - m.qtyPerUnit * craftJumlah };
+      });
     }
-  } else {
-    products.push({ id: nextProductId++, name, type, cat, buy, sell, stock, icon, img, desc });
-  }
+
+    if (id) {
+      const idx = list.findIndex(p => p.id === parseInt(id));
+      if (idx >= 0) {
+        if (craftEnabled) {
+          // restock: gabungkan stok lama + hasil produksi baru, modal dirata-rata tertimbang
+          const prevStock = list[idx].stock;
+          const prevBuy = list[idx].buy;
+          const newTotalStock = prevStock + stock;
+          const newBuy = newTotalStock > 0 ? Math.round((prevStock * prevBuy + craftTotalModal) / newTotalStock) : buy;
+          list[idx] = { ...list[idx], name, type, cat, buy: newBuy, sell, stock: newTotalStock, icon, img, desc };
+        } else {
+          list[idx] = { ...list[idx], name, type, cat, buy, sell, stock, icon, img, desc };
+        }
+      }
+    } else {
+      const newId = list.length ? Math.max(0, ...list.map(p => p.id)) + 1 : 1;
+      nextProductId = newId + 1;
+      list.push({ id: newId, name, type, cat, buy, sell, stock, icon, img, desc });
+    }
+    return list;
+  });
+  if (!okSave) { if (btn) { btn.disabled = false; btn.textContent = 'Simpan Produk'; } return; }
+
   try {
     const craftNote = craftEnabled
       ? ` — di-craft dari: ${craftMaterials.map(m => `${m.product.name} x${m.qtyPerUnit * craftJumlah}`).join(', ')}`
@@ -3958,7 +4073,7 @@ function updateMoPrice() {
   if (p) document.getElementById('mo-total').value = fmt(p.sell * qty);
 }
 
-function saveMemberOrder() {
+async function saveMemberOrder() {
   const pid = parseInt(document.getElementById('mo-pid').value);
   const qty = parseInt(document.getElementById('mo-qty').value) || 1;
   const note = document.getElementById('mo-note').value.trim();
@@ -3971,20 +4086,28 @@ function saveMemberOrder() {
     if (!kelompok) { showToast('Nama kelompok harus diisi!', 'error'); return; }
   }
   const total = prod.sell * qty;
-  orders.push({
-    id: nextOrderId++,
-    buyer: state.currentUser.username,
-    buyerUsername: state.currentUser.username,
-    kelompok,
-    productId: prod.id,
-    category: prod.cat,
-    type: prod.type || 'illegal',
-    qty, total, note,
-    status: 'pending',
-    createdAt: new Date().toISOString(),
+  let newOrder = null;
+  const ok = await savePanelSafe(latest => {
+    const freshOrders = latest.orders || [];
+    const newId = freshOrders.length ? Math.max(...freshOrders.map(o => o.id), 0) + 1 : 1;
+    newOrder = {
+      id: newId,
+      buyer: state.currentUser.username,
+      buyerUsername: state.currentUser.username,
+      kelompok,
+      productId: prod.id,
+      category: prod.cat,
+      type: prod.type || 'illegal',
+      qty, total, note,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+    return { orders: [...freshOrders, newOrder] };
   });
+  if (!ok || !newOrder) return;
+  nextOrderId = newOrder.id + 1;
   logActivity('Buat Order', `${state.currentUser.username}${kelompok ? ' (' + kelompok + ')' : ''} — ${prod.name} x${qty}`);
-  sendDiscordOrderNotif(orders[orders.length - 1], prod);
+  sendDiscordOrderNotif(newOrder, prod);
   renderAll(); closeModal('modal-member-order');
   showToast(`Order berhasil dibuat! Menunggu konfirmasi admin.`, 'success');
 }
@@ -4004,14 +4127,18 @@ function openEditPrice(pid) {
   openModal('modal-price');
 }
 
-function saveEditPrice() {
+async function saveEditPrice() {
   const id = parseInt(document.getElementById('ep-id').value);
-  const idx = products.findIndex(p => p.id === id);
-  if (idx < 0) return;
-  products[idx].buy = parseInt(document.getElementById('ep-buy').value) || 0;
-  products[idx].sell = parseInt(document.getElementById('ep-sell').value) || 0;
-  products[idx].stock = parseInt(document.getElementById('ep-stock').value) || 0;
-  save(); renderAll(); closeModal('modal-price');
+  const buy = parseInt(document.getElementById('ep-buy').value) || 0;
+  const sell = parseInt(document.getElementById('ep-sell').value) || 0;
+  const stock = parseInt(document.getElementById('ep-stock').value) || 0;
+  const ok = await saveProductsOnly(list => {
+    const idx = list.findIndex(p => p.id === id);
+    if (idx >= 0) list[idx] = { ...list[idx], buy, sell, stock };
+    return list;
+  });
+  if (!ok) return;
+  renderAll(); closeModal('modal-price');
   showToast('Harga & stok diperbarui!', 'success');
 }
 
@@ -4040,27 +4167,33 @@ function openDepoWd(pid, mode) {
   openModal('modal-depowd');
 }
 
-function saveDepoWd() {
+async function saveDepoWd() {
   if (!isAdmin()) { showToast('Hanya admin/dev yang bisa input Deposit/Withdraw!', 'error'); return; }
   const id = parseInt(document.getElementById('dw-id').value);
   const mode = document.getElementById('dw-mode').value;
-  const idx = products.findIndex(p => p.id === id);
-  if (idx < 0) return;
-  const p = products[idx];
-  if (!isMoneyItem(p)) return;
   const amount = parseInt(document.getElementById('dw-amount').value) || 0;
   if (amount <= 0) { showToast('Jumlah harus lebih dari 0!', 'error'); return; }
   const note = document.getElementById('dw-note').value.trim();
-  if (mode === 'withdraw' && amount > p.stock) {
-    showToast(`Stok tidak cukup untuk withdraw! Tersedia: ${p.stock}`, 'error');
-    return;
-  }
-  const before = p.stock;
-  p.stock = mode === 'deposit' ? p.stock + amount : p.stock - amount;
+
+  let before = 0, after = 0, prodName = '', errMsg = '';
+  const ok = await saveProductsOnly(list => {
+    const idx = list.findIndex(p => p.id === id);
+    if (idx < 0 || !isMoneyItem(list[idx])) { errMsg = 'Produk tidak ditemukan!'; return list; }
+    const p = list[idx];
+    before = p.stock;
+    if (mode === 'withdraw' && amount > p.stock) { errMsg = `Stok tidak cukup untuk withdraw! Tersedia: ${p.stock}`; return list; }
+    after = mode === 'deposit' ? p.stock + amount : p.stock - amount;
+    prodName = p.name;
+    list[idx] = { ...p, stock: after };
+    return list;
+  });
+  if (!ok) return;
+  if (errMsg) { showToast(errMsg, 'error'); return; }
+
   const actionLabel = mode === 'deposit' ? 'Deposit Uang' : 'Withdraw Uang';
   const arrow = mode === 'deposit' ? '+' : '-';
-  logActivity(actionLabel, `${p.name} ${arrow}${amount} (sebelum: ${before}, sesudah: ${p.stock})${note ? ' — ' + note : ''}`);
-  save(); renderAll(); closeModal('modal-depowd');
+  logActivity(actionLabel, `${prodName} ${arrow}${amount} (sebelum: ${before}, sesudah: ${after})${note ? ' — ' + note : ''}`);
+  renderAll(); closeModal('modal-depowd');
   showToast(`${mode === 'deposit' ? 'Deposit' : 'Withdraw'} berhasil dicatat!`, 'success');
 }
 
@@ -4194,24 +4327,22 @@ function openSetorModal(username) {
   openModal('modal-setor');
 }
 
-function saveSetoran() {
+async function saveSetoran() {
   const username = document.getElementById('st-username').value;
   const itemId = parseInt(document.getElementById('st-item').value);
   const qty = parseInt(document.getElementById('st-qty').value) || 1;
   const note = document.getElementById('st-note').value.trim();
   const item = setorItems.find(x => x.id === itemId);
   if (!item) { showToast('Pilih barang setoran!', 'error'); return; }
-  setoran.push({
-    id: nextSetorId++,
-    username,
-    itemId: item.id,
-    itemName: item.name,
-    itemIcon: item.icon,
-    qty, note,
-    createdAt: new Date().toISOString(),
+  const ok = await savePanelSafe(latest => {
+    const freshSetoran = latest.setoran || [];
+    const newId = freshSetoran.length ? Math.max(...freshSetoran.map(s => s.id), 0) + 1 : 1;
+    const entry = { id: newId, username, itemId: item.id, itemName: item.name, itemIcon: item.icon, qty, note, createdAt: new Date().toISOString() };
+    return { setoran: [...freshSetoran, entry] };
   });
+  if (!ok) return;
   logActivity('Setoran', `${username} — ${item.name} x${qty}`);
-    closeModal('modal-setor');
+  closeModal('modal-setor');
   renderMemberRoster();
   renderSetoranTab();
   showToast(`Setoran ${item.name} x${qty} dari ${username} ditambahkan!`, 'success');
@@ -4235,10 +4366,10 @@ function renderSetoranTab() {
   </tr>`).join('');
 }
 
-function deleteSetoran(id) {
+async function deleteSetoran(id) {
   if (!isAdmin()) return;
   const s = setoran.find(x => x.id === id);
-  setoran = setoran.filter(s => s.id !== id);
+  await savePanelSafe(latest => ({ setoran: (latest.setoran || []).filter(x => x.id !== id) }));
   logActivity('Hapus Setoran', s ? `${s.username} — ${s.itemName} x${s.qty}` : `#${id}`);
     renderSetoranTab();
   renderMemberRoster();
@@ -4388,14 +4519,19 @@ function openRekrutModal() {
   openModal('modal-rekrut');
 }
 
-function saveRekrut() {
+async function saveRekrut() {
   const name = document.getElementById('rk-name').value.trim();
   const pass = document.getElementById('rk-pass').value || '123456';
   const jabatan = document.getElementById('rk-jabatan').value;
   const status = document.getElementById('rk-status').value;
   if (!name) { showToast('Nama harus diisi!', 'error'); return; }
-  if (users.find(u => u.username === name)) { showToast('Nama sudah digunakan!', 'error'); return; }
-  users.push({ id: Date.now(), username: name, password: pass, role: 'member', active: true, photo: '', jabatan, status });
+  let dup = false;
+  const ok = await saveUsersOnly(list => {
+    if (list.find(u => u.username === name)) { dup = true; return list; }
+    return [...list, { id: Date.now(), username: name, password: pass, role: 'member', active: true, photo: '', jabatan, status }];
+  });
+  if (!ok) return;
+  if (dup) { showToast('Nama sudah digunakan!', 'error'); return; }
   logActivity('Rekrut Member', `${name} — ${jabatanMeta(jabatan).label}`);
   renderAll(); closeModal('modal-rekrut');
   showToast(`${name} berhasil direkrut sebagai ${jabatanMeta(jabatan).label}!`, 'success');
@@ -4436,29 +4572,42 @@ function renderTambahAdminModal() {
     : `<div class="empty-state" style="padding:10px"><p style="font-size:11px">Belum ada admin</p></div>`;
 }
 
-function saveTambahAdmin() {
+async function saveTambahAdmin() {
   if (!isDeveloper()) { showToast('Hanya developer yang bisa mengelola admin!', 'error'); return; }
   const sel = document.getElementById('ta-member-select');
   const id = parseInt(sel.value);
   if (!id) { showToast('Pilih member terlebih dahulu!', 'error'); return; }
-  const u = users.find(x => x.id === id);
-  if (!u || u.role !== 'member') { showToast('Member tidak ditemukan!', 'error'); return; }
-  u.prevJabatan = u.jabatan;
-  u.role = 'admin';
-  logActivity('Tambah Admin', `${u.username} diberi akses admin oleh developer`);
+  let uname = null, notFound = false;
+  const ok = await saveUsersOnly(list => {
+    const idx = list.findIndex(x => x.id === id);
+    if (idx < 0 || list[idx].role !== 'member') { notFound = true; return list; }
+    uname = list[idx].username;
+    list[idx] = { ...list[idx], prevJabatan: list[idx].jabatan, role: 'admin' };
+    return list;
+  });
+  if (!ok) return;
+  if (notFound) { showToast('Member tidak ditemukan!', 'error'); return; }
+  logActivity('Tambah Admin', `${uname} diberi akses admin oleh developer`);
   renderAll(); renderTambahAdminModal();
-  showToast(`${u.username} sekarang menjadi admin!`, 'success');
+  showToast(`${uname} sekarang menjadi admin!`, 'success');
 }
 
-function cabutAdmin(uid) {
+async function cabutAdmin(uid) {
   if (!isDeveloper()) { showToast('Hanya developer yang bisa mencabut akses admin!', 'error'); return; }
-  const u = users.find(x => x.id === uid);
-  if (!u) return;
-  u.role = 'member';
-  if (u.prevJabatan) { u.jabatan = u.prevJabatan; delete u.prevJabatan; }
-  logActivity('Cabut Admin', `${u.username} dikembalikan menjadi member oleh developer`);
+  let uname = null;
+  const ok = await saveUsersOnly(list => {
+    const idx = list.findIndex(x => x.id === uid);
+    if (idx < 0) return list;
+    const u = { ...list[idx], role: 'member' };
+    if (u.prevJabatan) { u.jabatan = u.prevJabatan; delete u.prevJabatan; }
+    uname = u.username;
+    list[idx] = u;
+    return list;
+  });
+  if (!ok || !uname) return;
+  logActivity('Cabut Admin', `${uname} dikembalikan menjadi member oleh developer`);
   renderAll(); renderTambahAdminModal();
-  showToast(`Akses admin ${u.username} dicabut.`, 'warning');
+  showToast(`Akses admin ${uname} dicabut.`, 'warning');
 }
 
 // ── EDIT MEMBER (jabatan & status) ──
@@ -4473,16 +4622,19 @@ function openEditMember(uid) {
   openModal('modal-edit-member');
 }
 
-function saveEditMember() {
+async function saveEditMember() {
   const id = parseInt(document.getElementById('em-id').value);
-  const idx = users.findIndex(u => u.id === id);
-  if (idx < 0) return;
   const name = document.getElementById('em-name').value.trim();
   if (!name) { showToast('Nama harus diisi!', 'error'); return; }
-  users[idx].username = name;
-  users[idx].jabatan = document.getElementById('em-jabatan').value;
-  users[idx].status = document.getElementById('em-status').value;
-  logActivity('Edit Member', `${name} — ${jabatanMeta(users[idx].jabatan).label} / ${users[idx].status}`);
+  const jabatan = document.getElementById('em-jabatan').value;
+  const status = document.getElementById('em-status').value;
+  const ok = await saveUsersOnly(list => {
+    const idx = list.findIndex(u => u.id === id);
+    if (idx >= 0) list[idx] = { ...list[idx], username: name, jabatan, status };
+    return list;
+  });
+  if (!ok) return;
+  logActivity('Edit Member', `${name} — ${jabatanMeta(jabatan).label} / ${status}`);
   renderAll(); closeModal('modal-edit-member');
   showToast('Data anggota diperbarui!', 'success');
 }
@@ -4490,11 +4642,15 @@ function saveEditMember() {
 // ════════════════════════════════════
 //  USERS
 // ════════════════════════════════════
-function deleteUser(uid) {
+async function deleteUser(uid) {
   if (!isAdmin()) return;
-  const u = users.find(x => x.id === uid);
-  users = users.filter(u => u.id !== uid);
-  logActivity('Hapus User', u ? u.username : `#${uid}`);
+  let uname = null;
+  await saveUsersOnly(list => {
+    const u = list.find(x => x.id === uid);
+    uname = u ? u.username : null;
+    return list.filter(x => x.id !== uid);
+  });
+  logActivity('Hapus User', uname || `#${uid}`);
   renderAll();
   showToast('User dihapus.', 'warning');
 }
@@ -4523,17 +4679,23 @@ function confirmDeleteOrder(oid) {
   document.getElementById('confirm-ok-btn').onclick = executeDelete;
   openModal('confirm-dialog');
 }
-function executeDelete() {
+async function executeDelete() {
   if (!_deleteTarget) return;
   if (_deleteTarget.type === 'product') {
-    const p = products.find(x => x.id === _deleteTarget.id);
-    products = products.filter(p => p.id !== _deleteTarget.id);
-    logActivity('Hapus Produk', p ? p.name : `#${_deleteTarget.id}`);
+    const targetId = _deleteTarget.id;
+    let pName = null;
+    await saveProductsOnly(list => {
+      const p = list.find(x => x.id === targetId);
+      pName = p ? p.name : null;
+      return list.filter(x => x.id !== targetId);
+    });
+    logActivity('Hapus Produk', pName || `#${targetId}`);
     showToast('Produk dihapus.', 'warning');
   }
   else if (_deleteTarget.type === 'order') {
-    orders = orders.filter(o => o.id !== _deleteTarget.id);
-    logActivity('Hapus Order', `#${String(_deleteTarget.id).padStart(4, '0')}`);
+    const targetId = _deleteTarget.id;
+    await savePanelSafe(latest => ({ orders: (latest.orders || []).filter(o => o.id !== targetId) }));
+    logActivity('Hapus Order', `#${String(targetId).padStart(4, '0')}`);
     showToast('Order dihapus.', 'warning');
   }
   renderAll(); closeConfirm();
@@ -4605,14 +4767,13 @@ function confirmResetData() {
   openModal('confirm-dialog');
 }
 
-function executeResetData() {
+async function executeResetData() {
   if (!isAdmin()) return;
-  orders = [];
+  const ok = await savePanelSafe(() => ({ orders: [], setoran: [] }));
+  if (!ok) return;
   nextOrderId = 1;
-  setoran = [];
   nextSetorId = 1;
   logActivity('Reset Data', 'Seluruh data transaksi (order, omzet, setoran) direset oleh admin');
-  save();
   renderAll();
   closeConfirm();
   showToast('Semua data transaksi berhasil direset!', 'success');
