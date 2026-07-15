@@ -297,6 +297,9 @@
     flex-shrink:0;
   }
   .dash-logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
     font-family:var(--display);
     font-weight:700;
     font-size:17px;
@@ -305,6 +308,16 @@
     margin-bottom:34px;
     padding-left:6px;
     text-transform:uppercase;
+  }
+  .dash-logo-img{
+    width:34px;height:34px;
+    border-radius:50%;
+    background:#eef0f8;
+    object-fit:contain;
+    padding:5px;
+    flex-shrink:0;
+    box-shadow:0 0 0 3px rgba(90,160,224,0.14);
+    animation:floatLogo 3.6s ease-in-out infinite;
   }
   .dash-nav{display:flex;flex-direction:column;gap:5px;}
   .dash-nav a{
@@ -992,7 +1005,7 @@
   <div class="dash-shell">
     <!-- Sidebar -->
     <div class="dash-sidebar">
-      <div class="dash-logo">RADIANT REBELLION</div>
+      <div class="dash-logo"><img class="dash-logo-img" src="https://i.imgur.com/NqR0nfk.png" alt="Logo"><span>RADIANT REBELLION</span></div>
       <div class="dash-nav">
         <a data-page="overview" class="active" onclick="showPage('overview')"><span class="nav-ic"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span> Overview</a>
         <a data-page="biz" class="admin-only" onclick="showPage('biz')"><span class="nav-ic"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M9 21V13h6v8"/><path d="M3 9h18"/></svg></span> Bisnis</a>
