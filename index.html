@@ -817,6 +817,232 @@
   .kelola-item-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;}
   .empty-icon{font-size:26px;margin-bottom:6px;}
 
+  /* ===== MEMBER TAB UI SUPER BAGUS ===== */
+
+  /* Tab Switcher */
+  .member-tab-switcher {
+    display: flex;
+    gap: 6px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 14px;
+    padding: 6px;
+    margin: 18px 0 22px 0;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .member-tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .25s ease;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: .3px;
+    position: relative;
+  }
+  .member-tab-btn:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.04);
+  }
+  .member-tab-btn.active {
+    background: linear-gradient(135deg, rgba(90,160,224,0.2), rgba(123,110,224,0.15));
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(90,160,224,0.12);
+  }
+  .member-tab-btn .mtb-icon {
+    font-size: 16px;
+  }
+  .member-tab-btn .mtb-badge {
+    background: rgba(255,255,255,0.08);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .member-tab-btn.active .mtb-badge {
+    background: rgba(90,160,224,0.2);
+    color: var(--accent-blue);
+  }
+
+  /* Statistik Grid */
+  .member-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .member-stat-card {
+    background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: transform .2s ease, border-color .2s ease;
+  }
+  .member-stat-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,255,255,0.15);
+  }
+  .member-stat-card .msc-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .member-stat-card.ms-total .msc-icon { background: rgba(90,160,224,0.18); }
+  .member-stat-card.ms-aktif .msc-icon { background: rgba(74,216,168,0.18); }
+  .member-stat-card.ms-rehat .msc-icon { background: rgba(247,185,85,0.18); }
+  .member-stat-card.ms-ratio .msc-icon { background: rgba(123,110,224,0.18); }
+
+  .member-stat-card .msc-content {
+    flex: 1;
+    min-width: 0;
+  }
+  .member-stat-card .msc-value {
+    font-family: var(--display-heavy);
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -.3px;
+    line-height: 1.1;
+  }
+  .member-stat-card.ms-total .msc-value { color: var(--accent-blue); }
+  .member-stat-card.ms-aktif .msc-value { color: var(--success); }
+  .member-stat-card.ms-rehat .msc-value { color: var(--warning); }
+  .member-stat-card .msc-label {
+    font-size: 10.5px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+  .member-stat-card.ms-ratio .msc-label { text-transform: none; }
+
+  /* Progress track di dalam kartu ratio */
+  .member-stat-card.ms-ratio .progress-track {
+    height: 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+  .member-stat-card.ms-ratio .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+  }
+
+  /* ROSTER — lebih bagus */
+  .roster-group {
+    margin-bottom: 18px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 14px;
+    padding: 4px 6px 10px 6px;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .roster-group-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px 8px 16px;
+    border-left: 4px solid var(--accent-blue);
+    margin-bottom: 6px;
+  }
+  .roster-group-head .rg-name {
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .roster-group-head .rg-count {
+    font-size: 10.5px;
+    color: var(--muted);
+    background: rgba(255,255,255,0.05);
+    padding: 2px 12px;
+    border-radius: 20px;
+  }
+  .roster-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    margin-bottom: 4px;
+    transition: background .15s ease;
+    flex-wrap: wrap;
+  }
+  .roster-row:hover {
+    background: rgba(255,255,255,0.06);
+  }
+  .roster-name {
+    font-weight: 600;
+    color: #fff;
+    font-size: 13px;
+    flex: 1;
+    min-width: 140px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .roster-setor-summary {
+    font-size: 11px;
+    background: rgba(74,216,168,0.1);
+    border: 1px solid rgba(74,216,168,0.2);
+    padding: 2px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    cursor: default;
+    color: var(--success);
+  }
+  .roster-setor-link {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent-blue);
+    cursor: pointer;
+    margin-left: 4px;
+    text-decoration: underline;
+    opacity: .7;
+  }
+  .roster-setor-link:hover {
+    opacity: 1;
+  }
+  .roster-row .badge {
+    font-size: 9.5px;
+    padding: 3px 10px;
+    font-weight: 700;
+  }
+  .roster-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .member-stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .member-tab-btn {
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+    .member-tab-btn .mtb-label { display: none; }
+    .member-tab-btn .mtb-icon { font-size: 18px; }
+  }
+
+
   .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,116px));gap:12px;}
   .inv-slot{
     aspect-ratio:1/1;
@@ -1170,24 +1396,55 @@
           </div>
         </div>
 
-        <div class="cat-tabs" style="margin:16px 0">
-          <div class="cat-tab active" id="mtab-member" onclick="switchMemberTab('member')">👥 Member</div>
-          <div class="cat-tab" id="mtab-setoran" onclick="switchMemberTab('setoran')">💰 Setoran</div>
+        <!-- TAB SWITCHER KEREN -->
+        <div class="member-tab-switcher">
+          <div class="member-tab-btn active" id="mtab-member" onclick="switchMemberTab('member')">
+            <span class="mtb-icon">👥</span>
+            <span class="mtb-label">Member</span>
+            <span class="mtb-badge" id="mstat-total-badge">0</span>
+          </div>
+          <div class="member-tab-btn" id="mtab-setoran" onclick="switchMemberTab('setoran')">
+            <span class="mtb-icon">💰</span>
+            <span class="mtb-label">Setoran</span>
+            <span class="mtb-badge" id="mstat-setoran-badge">0</span>
+          </div>
         </div>
 
         <!-- MEMBER TAB -->
         <div id="member-tab-member">
-          <div class="member-stat-row">
-            <div class="member-stat-box"><div class="msb-label">Total Anggota</div><div class="msb-value" id="mstat-total">0</div></div>
-            <div class="member-stat-box"><div class="msb-label">Aktif</div><div class="msb-value" id="mstat-aktif" style="color:var(--success)">0</div></div>
-            <div class="member-stat-box"><div class="msb-label">Rehat</div><div class="msb-value" id="mstat-rehat" style="color:var(--warning)">0</div></div>
-            <div class="member-stat-box" style="flex:2">
-              <div class="msb-label">Rasio Aktif</div>
-              <div class="progress-track" style="margin-top:8px"><div class="progress-fill" id="mstat-ratio-bar" style="width:0%"></div></div>
-              <div style="font-family:var(--mono);font-size:11px;color:var(--success);margin-top:5px" id="mstat-ratio-txt">0%</div>
+          <!-- STATISTIK MEMBER - KARTU MODERN -->
+          <div class="member-stats-grid">
+            <div class="member-stat-card ms-total">
+              <div class="msc-icon">👥</div>
+              <div class="msc-content">
+                <div class="msc-value" id="mstat-total">0</div>
+                <div class="msc-label">Total Anggota</div>
+              </div>
+            </div>
+            <div class="member-stat-card ms-aktif">
+              <div class="msc-icon">✅</div>
+              <div class="msc-content">
+                <div class="msc-value" id="mstat-aktif">0</div>
+                <div class="msc-label">Aktif</div>
+              </div>
+            </div>
+            <div class="member-stat-card ms-rehat">
+              <div class="msc-icon">⏸️</div>
+              <div class="msc-content">
+                <div class="msc-value" id="mstat-rehat">0</div>
+                <div class="msc-label">Rehat</div>
+              </div>
+            </div>
+            <div class="member-stat-card ms-ratio">
+              <div class="msc-content" style="flex:1">
+                <div class="msc-label" style="margin-bottom:4px">Rasio Aktif</div>
+                <div class="progress-track"><div class="progress-fill" id="mstat-ratio-bar" style="width:0%"></div></div>
+                <div style="font-family:var(--mono);font-size:13px;color:var(--success);margin-top:4px" id="mstat-ratio-txt">0%</div>
+              </div>
             </div>
           </div>
 
+          <!-- FILTER -->
           <div class="member-filters">
             <input class="form-input" id="member-search" placeholder="🔍 Cari nama member..." style="width:220px;padding:8px 12px;font-size:12px" oninput="onMemberSearch(this.value)">
             <select class="form-select" id="member-filter-jabatan" style="width:170px;padding:8px 10px;font-size:12px" onchange="onMemberFilterJabatan(this.value)"><option value="all">Semua Jabatan</option></select>
@@ -1198,12 +1455,13 @@
             </select>
           </div>
 
+          <!-- ROSTER -->
           <div id="member-roster"></div>
         </div>
 
         <!-- SETORAN TAB -->
         <div id="member-tab-setoran" class="hidden">
-          <div class="table-wrap">
+          <div class="table-wrap" style="border-radius:16px">
             <div class="table-top">
               <span class="table-title">💰 Riwayat Setoran</span>
               <button class="btn btn-outline btn-sm admin-only-btn" onclick="openKelolaSetorItems()">⚙️ Kelola Barang</button>
@@ -4301,13 +4559,16 @@ function renderMemberStats() {
   const aktif = members.filter(u => (u.status || 'aktif') === 'aktif').length;
   const rehat = total - aktif;
   const ratio = total ? Math.round((aktif / total) * 100) : 0;
-  const elTotal = document.getElementById('mstat-total');
-  if (!elTotal) return;
-  elTotal.textContent = total;
+  
+  document.getElementById('mstat-total').textContent = total;
   document.getElementById('mstat-aktif').textContent = aktif;
   document.getElementById('mstat-rehat').textContent = rehat;
   document.getElementById('mstat-ratio-bar').style.width = ratio + '%';
   document.getElementById('mstat-ratio-txt').textContent = ratio + '%';
+  
+  // Badge di tab switcher
+  document.getElementById('mstat-total-badge').textContent = total;
+  document.getElementById('mstat-setoran-badge').textContent = setoran.length;
 }
 
 function renderMemberRoster() {
