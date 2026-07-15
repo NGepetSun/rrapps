@@ -1304,6 +1304,33 @@
         <div class="stat-header" style="margin-bottom:18px">
           <h2>Manajemen Order</h2>
         </div>
+        <div class="gstat-grid" style="margin-bottom:18px">
+          <div class="gstat-card c-blue">
+            <div class="gstat-top"><div class="gstat-icon">📋</div><div class="gstat-label">Total Order</div></div>
+            <div class="gstat-amount" id="stat-order-total">0</div>
+            <div class="gstat-sub">Semua order masuk</div>
+          </div>
+          <div class="gstat-card c-orange">
+            <div class="gstat-top"><div class="gstat-icon">⏳</div><div class="gstat-label">Pending</div></div>
+            <div class="gstat-amount" id="stat-order-pending">0</div>
+            <div class="gstat-sub">Menunggu konfirmasi</div>
+          </div>
+          <div class="gstat-card c-skyblue">
+            <div class="gstat-top"><div class="gstat-icon">✅</div><div class="gstat-label">ACC Order</div></div>
+            <div class="gstat-amount" id="stat-order-accorder">0</div>
+            <div class="gstat-sub">Order diterima</div>
+          </div>
+          <div class="gstat-card c-purple">
+            <div class="gstat-top"><div class="gstat-icon">📦</div><div class="gstat-label">ACC Barang</div></div>
+            <div class="gstat-amount" id="stat-order-accbarang">0</div>
+            <div class="gstat-sub">Barang diproses</div>
+          </div>
+          <div class="gstat-card c-green">
+            <div class="gstat-top"><div class="gstat-icon">🎯</div><div class="gstat-label">Selesai</div></div>
+            <div class="gstat-amount" id="stat-order-selesai">0</div>
+            <div class="gstat-sub">Order selesai</div>
+          </div>
+        </div>
         <div class="cat-tabs" id="order-type-tabs">
           <div class="cat-tab active" onclick="filterOrderType('biz',this)">🏪 Order Bisnis</div>
           <div class="cat-tab" onclick="filterOrderType('illegal',this)">🔫 Order Checkout</div>
@@ -3478,9 +3505,23 @@ function filterOrder(s, el) {
   renderOrderTable();
 }
 
+function updateOrderStats() {
+  const orderType = state.orderTypeFilter || 'biz';
+  let base = orders.filter(o => getOrderType(o) === orderType);
+  if (isMember()) base = base.filter(o => o.buyerUsername === state.currentUser.username);
+  const count = s => base.filter(o => o.status === s).length;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('stat-order-total', base.length);
+  set('stat-order-pending', count('pending'));
+  set('stat-order-accorder', count('acc_order'));
+  set('stat-order-accbarang', count('acc_barang'));
+  set('stat-order-selesai', count('selesai'));
+}
+
 function renderOrderTable() {
   const tb = document.getElementById('order-tbody');
   if (!tb) return;
+  updateOrderStats();
   const orderType = state.orderTypeFilter || 'biz';
   let filtered = [...orders].reverse().filter(o => getOrderType(o) === orderType);
   if (state.orderFilter !== 'all') filtered = filtered.filter(o => o.status === state.orderFilter);
