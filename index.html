@@ -1313,7 +1313,7 @@
         <div class="stat-header" style="margin-bottom:18px">
           <h2>Manajemen Order</h2>
         </div>
-        <div class="gstat-grid" style="margin-bottom:18px">
+        <div class="gstat-grid admin-only" style="margin-bottom:18px">
           <div class="gstat-card c-blue">
             <div class="gstat-top"><div class="gstat-icon">📋</div><div class="gstat-label">Total Order</div></div>
             <div class="gstat-amount" id="stat-order-total">0</div>
@@ -4296,7 +4296,7 @@ function hasSetorThisWeek(username) {
 }
 
 function renderMemberStats() {
-  const members = users.filter(u => u.role === 'member');
+  const members = users.filter(u => u.role === 'member' || u.role === 'admin');
   const total = members.length;
   const aktif = members.filter(u => (u.status || 'aktif') === 'aktif').length;
   const rehat = total - aktif;
@@ -4315,7 +4315,7 @@ function renderMemberRoster() {
   if (!wrap) return;
   renderMemberStats();
 
-  let members = users.filter(u => u.role === 'member');
+  let members = users.filter(u => u.role === 'member' || u.role === 'admin');
   if (state.memberSearch) members = members.filter(u => u.username.toLowerCase().includes(state.memberSearch));
   if (state.memberJabatanFilter !== 'all') members = members.filter(u => (u.jabatan || 'MEMBER') === state.memberJabatanFilter);
   if (state.memberStatusFilter !== 'all') members = members.filter(u => (u.status || 'aktif') === state.memberStatusFilter);
@@ -4347,7 +4347,7 @@ function renderMemberRoster() {
         : '';
       return `<div class="roster-row">
         <span class="dot ${statusOk ? 'dot-green' : 'dot-red'}"></span>
-        <span class="roster-name">${u.username}${setorSummary ? `<span class="roster-setor-summary" title="${setorTitle.replace(/"/g, '&quot;')}">${setorSummary}</span>` : ''}<span class="roster-setor-link" onclick="openSetorModal('${uname}')">+ Setor</span></span>
+        <span class="roster-name">${u.username}${setorSummary ? `<span class="roster-setor-summary" title="${setorTitle.replace(/"/g, '&quot;')}">${setorSummary}</span>` : ''}<span class="roster-setor-link admin-only" onclick="openSetorModal('${uname}')">+ Setor</span></span>
         <span class="badge ${weekly ? 'badge-success' : 'badge-danger'}">${weekly ? '✓ WEEKLY' : '✗ WEEKLY'}</span>
         <span class="badge ${statusOk ? 'badge-success' : 'badge-warning'}">${statusOk ? 'AKTIF' : 'REHAT'}</span>
         <span class="roster-actions admin-only">
@@ -4363,6 +4363,7 @@ function renderMemberRoster() {
 }
 
 function openSetorModal(username) {
+  if (!isAdmin()) { showToast('Hanya admin yang bisa menambah setoran!', 'error'); return; }
   const u = users.find(x => x.username === username);
   if (!u) return;
   document.getElementById('st-username').value = username;
@@ -4378,6 +4379,7 @@ function openSetorModal(username) {
 }
 
 async function saveSetoran() {
+  if (!isAdmin()) { showToast('Hanya admin yang bisa menambah setoran!', 'error'); return; }
   const username = document.getElementById('st-username').value;
   const itemId = parseInt(document.getElementById('st-item').value);
   const qty = parseInt(document.getElementById('st-qty').value) || 1;
@@ -4570,6 +4572,7 @@ function openRekrutModal() {
 }
 
 async function saveRekrut() {
+  if (!isAdmin()) { showToast('Hanya admin yang bisa merekrut!', 'error'); return; }
   const name = document.getElementById('rk-name').value.trim();
   const pass = document.getElementById('rk-pass').value || '123456';
   const jabatan = document.getElementById('rk-jabatan').value;
@@ -4673,6 +4676,7 @@ function openEditMember(uid) {
 }
 
 async function saveEditMember() {
+  if (!isAdmin()) { showToast('Hanya admin yang bisa mengubah data member!', 'error'); return; }
   const id = parseInt(document.getElementById('em-id').value);
   const name = document.getElementById('em-name').value.trim();
   if (!name) { showToast('Nama harus diisi!', 'error'); return; }
