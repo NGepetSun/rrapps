@@ -1268,10 +1268,16 @@
       <div class="page-section" id="page-biz">
         <div class="section-header">
           <div class="section-title">Stok Barang Bisnis</div>
-          <button class="btn btn-primary" onclick="openAddProductModal('','biz')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Tambah Barang
-          </button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-outline" onclick="cloneAmunisiToBiz()" title="Salin semua barang kategori Amunisi di Inventori ke sini, tanpa harga & stok kosong">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+              Clone Amunisi
+            </button>
+            <button class="btn btn-primary" onclick="openAddProductModal('','biz')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Tambah Barang
+            </button>
+          </div>
         </div>
         <div class="cat-tabs" id="biz-tabs">
           <div class="cat-tab active" onclick="filterBiz('all',this)">🗂 Semua</div>
@@ -4052,6 +4058,53 @@ async function saveProduct() {
     showFirebaseError(err);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Simpan Produk'; }
+  }
+}
+
+// ════════════════════════════════════
+//  CLONE AMUNISI (INVENTORI ILEGAL) → BISNIS
+//  Menyalin semua barang kategori "Amunisi" ke menu Bisnis:
+//  tanpa harga (buy/sell = 0) & stok kosong (0). Stok diisi belakangan
+//  lewat tombol 🔺 DEPO di kartu produk. Admin/dev only.
+// ════════════════════════════════════
+async function cloneAmunisiToBiz() {
+  if (!isAdmin()) { showToast('Hanya admin/dev yang bisa clone barang!', 'error'); return; }
+  const sourceItems = products.filter(p => p.type === 'illegal' && p.cat === 'ammo');
+  if (!sourceItems.length) { showToast('Belum ada barang di kategori Amunisi!', 'error'); return; }
+
+  let addedCount = 0, skippedCount = 0;
+  const ok = await saveProductsOnly(list => {
+    let nextId = list.length ? Math.max(0, ...list.map(p => p.id)) + 1 : 1;
+    sourceItems.forEach(src => {
+      const already = list.some(p => p.type === 'biz' && p.name.trim().toLowerCase() === src.name.trim().toLowerCase());
+      if (already) { skippedCount++; return; }
+      list.push({
+        id: nextId++,
+        name: src.name,
+        type: 'biz',
+        cat: 'Amunisi',
+        buy: 0,
+        sell: 0,
+        stock: 0,
+        icon: src.icon,
+        img: src.img || '',
+        desc: src.desc || '',
+      });
+      addedCount++;
+    });
+    return list;
+  });
+  if (!ok) return;
+
+  nextProductId = products.length ? Math.max(0, ...products.map(p => p.id)) + 1 : 1;
+  if (addedCount > 0) {
+    logActivity('Clone Amunisi ke Bisnis', `${addedCount} barang disalin ke menu Bisnis (tanpa harga, stok 0)${skippedCount ? `, ${skippedCount} dilewati karena sudah ada` : ''}`);
+  }
+  renderAll();
+  if (addedCount === 0) {
+    showToast('Semua barang Amunisi sudah ada di menu Bisnis.', 'warning');
+  } else {
+    showToast(`${addedCount} barang Amunisi disalin ke Bisnis (stok kosong)!${skippedCount ? ` ${skippedCount} dilewati (sudah ada).` : ''}`, 'success');
   }
 }
 
