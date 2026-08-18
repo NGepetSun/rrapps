@@ -1804,9 +1804,16 @@
       <div id="mo-kelompok-field" class="form-row single" style="display:none">
         <div class="form-group">
           <label class="form-label">Nama Kelompok</label>
-          <input class="form-input" id="mo-kelompok" placeholder="cth: MPL">
+          <input class="form-input" id="mo-kelompok" placeholder="cth: MPL" oninput="updateMoPrice()">
         </div>
       </div>
+      <div id="mo-harga-field" class="form-row single" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Harga (Manual Input)</label>
+          <input class="form-input" id="mo-harga" type="number" min="0" placeholder="Masukkan harga per item" oninput="updateMoPrice()">
+        </div>
+      </div>
+      <div id="mo-biz-summary" style="display:none;margin-bottom:14px;padding:10px 12px;background:rgba(90,160,224,0.06);border:1px solid rgba(90,160,224,0.2);border-radius:9px;font-family:var(--mono);font-size:11.5px;color:var(--accent-blue);line-height:1.6"></div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Jumlah</label>
@@ -3611,7 +3618,7 @@ function renderOrderTable() {
   tb.innerHTML = filtered.map(o => {
     const prod = products.find(p => p.id === o.productId);
     const kelompokCell = orderType === 'biz'
-      ? `<td>${o.kelompok ? `<span style="font-family:var(--mono);font-size:11px;color:var(--accent-blue)">🏳️ ${o.kelompok}</span>` : '—'}</td>`
+      ? `<td>${o.kelompok ? `<span style="font-family:var(--mono);font-size:11px;color:var(--accent-blue)">🏳️ ${o.kelompok} — Di Input Oleh ${o.buyer || '-'} — ${fmt(o.hargaSatuan != null ? o.hargaSatuan : (o.qty ? o.total / o.qty : o.total))}</span>` : '—'}</td>`
       : '';
     return `<tr>
       <td><span style="font-family:var(--mono);font-size:10px;color:var(--muted)">#${String(o.id).padStart(4, '0')}</span></td>
@@ -4215,19 +4222,24 @@ function openMemberOrder(pid) {
   const p = products.find(x => x.id === pid);
   if (!p) return;
   if (isMoneyItem(p)) { showToast('Barang ini tidak bisa di-order, gunakan sistem DEPO/WD!', 'error'); return; }
+  const isBiz = p.type === 'biz';
   document.getElementById('mo-pid').value = pid;
   document.getElementById('mo-avatar').innerHTML = avatarContent(state.currentUser);
   document.getElementById('mo-uname').textContent = state.currentUser.username;
   document.getElementById('mo-name').textContent = p.name;
-  document.getElementById('mo-price').textContent = fmt(p.sell) + ' / unit';
+  document.getElementById('mo-price').textContent = isBiz ? 'Harga custom (input manual)' : fmt(p.sell) + ' / unit';
   const moImg = document.getElementById('mo-img');
   moImg.innerHTML = p.img ? `<img src="${p.img}" onerror="this.parentElement.innerHTML='<span id=&quot;mo-icon&quot;>${p.icon}</span>'">` : `<span id="mo-icon">${p.icon}</span>`;
   document.getElementById('member-order-title').textContent = '🛒 BELI — ' + p.name;
   document.getElementById('mo-qty').value = 1;
   document.getElementById('mo-note').value = '';
   const kelompokField = document.getElementById('mo-kelompok-field');
-  kelompokField.style.display = p.type === 'biz' ? '' : 'none';
+  kelompokField.style.display = isBiz ? '' : 'none';
   document.getElementById('mo-kelompok').value = '';
+  const hargaField = document.getElementById('mo-harga-field');
+  hargaField.style.display = isBiz ? '' : 'none';
+  document.getElementById('mo-harga').value = '';
+  document.getElementById('mo-biz-summary').style.display = isBiz ? '' : 'none';
   updateMoPrice();
   openModal('modal-member-order');
 }
@@ -4236,7 +4248,16 @@ function updateMoPrice() {
   const pid = parseInt(document.getElementById('mo-pid').value);
   const qty = parseInt(document.getElementById('mo-qty').value) || 1;
   const p = products.find(x => x.id === pid);
-  if (p) document.getElementById('mo-total').value = fmt(p.sell * qty);
+  if (!p) return;
+  if (p.type === 'biz') {
+    const harga = parseInt(document.getElementById('mo-harga').value) || 0;
+    document.getElementById('mo-total').value = fmt(harga * qty);
+    const kelompok = document.getElementById('mo-kelompok').value.trim();
+    const summary = document.getElementById('mo-biz-summary');
+    summary.textContent = `${kelompok || '(Nama Kelompok)'} — Di Input Oleh ${state.currentUser.username} — ${harga ? fmt(harga) : '(Harga)'}`;
+  } else {
+    document.getElementById('mo-total').value = fmt(p.sell * qty);
+  }
 }
 
 async function saveMemberOrder() {
@@ -4247,11 +4268,14 @@ async function saveMemberOrder() {
   if (!prod) return;
   if (qty > prod.stock) { showToast(`Stok tidak cukup! Tersedia: ${prod.stock}`, 'error'); return; }
   let kelompok = null;
+  let hargaSatuan = prod.sell;
   if (prod.type === 'biz') {
     kelompok = document.getElementById('mo-kelompok').value.trim();
     if (!kelompok) { showToast('Nama kelompok harus diisi!', 'error'); return; }
+    hargaSatuan = parseInt(document.getElementById('mo-harga').value) || 0;
+    if (hargaSatuan <= 0) { showToast('Harga harus diisi manual dan lebih dari 0!', 'error'); return; }
   }
-  const total = prod.sell * qty;
+  const total = hargaSatuan * qty;
   let newOrder = null;
   const ok = await savePanelSafe(latest => {
     const freshOrders = latest.orders || [];
@@ -4261,6 +4285,7 @@ async function saveMemberOrder() {
       buyer: state.currentUser.username,
       buyerUsername: state.currentUser.username,
       kelompok,
+      hargaSatuan,
       productId: prod.id,
       category: prod.cat,
       type: prod.type || 'illegal',
