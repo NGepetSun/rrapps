@@ -1045,6 +1045,153 @@
   #loadingOverlay .ld-spinner{width:42px;height:42px;border-radius:50%;border:3px solid rgba(255,255,255,0.15);border-top-color:#7b6ee0;animation:ld-spin 0.8s linear infinite;}
   #loadingOverlay .ld-text{color:#9aa0b8;font-size:13px;letter-spacing:0.4px;}
   @keyframes ld-spin{to{transform:rotate(360deg);}}
+
+.rekap-system-section{position:relative;margin-top:18px;padding:20px;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:linear-gradient(145deg,rgba(18,30,54,.88),rgba(12,20,38,.72));overflow:hidden}
+.rekap-system-section:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--rekap-accent,#4a9cff);opacity:.9}
+.rekap-biz-system{--rekap-accent:#4ad8a8}.rekap-checkout-system{--rekap-accent:#a779ff}
+.rekap-system-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}.rekap-system-head h2{margin:2px 0 6px;font-size:20px}.rekap-system-head p{margin:0;color:var(--muted);font-size:11px;line-height:1.65;max-width:720px}.rekap-system-kicker{font-size:9px;letter-spacing:1.8px;font-weight:800;color:var(--rekap-accent)}
+.rekap-system-badge{font-size:9px;font-weight:800;letter-spacing:.8px;padding:8px 11px;border-radius:10px;color:var(--rekap-accent);background:color-mix(in srgb,var(--rekap-accent) 12%,transparent);border:1px solid color-mix(in srgb,var(--rekap-accent) 28%,transparent);white-space:nowrap}
+.rekap-system-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}.rekap-system-kpi{padding:13px;border:1px solid rgba(255,255,255,.07);border-radius:13px;background:rgba(255,255,255,.025)}.rekap-system-kpi span{display:block;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}.rekap-system-kpi strong{display:block;margin-top:6px;font-size:17px;color:var(--text)}.rekap-system-kpi small{display:block;margin-top:4px;color:var(--muted);font-size:9px}
+.rekap-info-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:12px}.rekap-info-panel{min-width:0;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(5,12,25,.32);padding:14px}.rekap-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}.rekap-panel-head h3{margin:0;font-size:13px}.rekap-panel-head p{margin:4px 0 0;font-size:9px;color:var(--muted)}.rekap-panel-head>span{font-size:9px;color:var(--rekap-accent);font-weight:700;white-space:nowrap}
+.rekap-product-list,.rekap-month-list{display:flex;flex-direction:column;gap:7px;max-height:390px;overflow:auto;padding-right:2px}.rekap-product-card{display:grid;grid-template-columns:32px minmax(120px,1fr) repeat(3,minmax(70px,auto));align-items:center;gap:9px;padding:10px;border-radius:11px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055)}.rekap-product-rank{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:color-mix(in srgb,var(--rekap-accent) 12%,transparent);color:var(--rekap-accent);font-size:9px;font-weight:800}.rekap-product-main strong{display:block;font-size:11px}.rekap-product-main span{display:block;margin-top:3px;color:var(--muted);font-size:9px}.rekap-product-stat{text-align:right}.rekap-product-stat small,.rekap-month-card small{display:block;color:var(--muted);font-size:8px}.rekap-product-stat b,.rekap-month-card b{display:block;margin-top:3px;font-size:10px}.rekap-month-card{display:grid;grid-template-columns:minmax(130px,1.4fr) repeat(3,1fr);align-items:center;gap:10px;padding:11px;border-radius:11px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055)}.rekap-month-card strong{display:block;font-size:11px;text-transform:capitalize}.rekap-month-card span{display:block;margin-top:3px;color:var(--muted);font-size:9px}.rekap-empty{padding:24px 10px;text-align:center;color:var(--muted);font-size:10px;border:1px dashed rgba(255,255,255,.08);border-radius:10px}
+@media(max-width:900px){.rekap-system-kpis{grid-template-columns:repeat(2,1fr)}.rekap-info-grid{grid-template-columns:1fr}.rekap-product-card{grid-template-columns:30px 1fr 1fr 1fr}.rekap-product-stat:last-child{grid-column:3}.rekap-month-card{grid-template-columns:1fr 1fr}.rekap-month-card>div:first-child{grid-column:1/-1}}
+@media(max-width:560px){.rekap-system-section{padding:14px}.rekap-system-head{flex-direction:column}.rekap-system-kpis{grid-template-columns:1fr 1fr}.rekap-product-card{grid-template-columns:28px 1fr 1fr}.rekap-product-stat:nth-last-child(-n+2){margin-top:4px}.rekap-month-card{grid-template-columns:1fr 1fr}}
+
+/* =========================================================
+   MOBILE RESPONSIVE UPGRADE
+   Keeps the desktop UI intact and adapts the dashboard for
+   phones without requiring desktop-site mode.
+   ========================================================= */
+@media (max-width: 700px){
+  html,body{width:100%;min-width:0;overflow-x:hidden;}
+  body{display:block;min-height:100dvh;background-attachment:scroll;}
+
+  /* Login */
+  #loginPage{min-height:100dvh;padding:18px 12px;align-items:center;}
+  .login-shell{max-width:100%;}
+  .login-topbar{padding:0 4px 12px;}
+  .login-body{width:100%;}
+  .login-left,.login-right{width:100%;margin:0;padding:20px 16px;}
+  .login-right{min-height:220px;padding-left:20px;}
+  .login-form{width:100%;}
+
+  /* Dashboard shell */
+  #dashboardPage{width:100%;min-height:100dvh;}
+  .dash-shell{
+    width:100%;max-width:none;min-height:100dvh;height:auto;
+    border-radius:0;display:flex;flex-direction:column;overflow:visible;
+    box-shadow:none;
+  }
+  .dash-sidebar{
+    width:100%;height:auto;min-height:0;padding:10px 10px 8px;
+    flex:0 0 auto;display:block;position:sticky;top:0;z-index:1000;
+    background:rgba(10,16,38,.96);backdrop-filter:blur(16px);
+    border-right:0;border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .dash-logo{margin:0 0 8px;padding:0 4px;font-size:13px;gap:7px;}
+  .dash-logo-img{width:27px;height:27px;}
+  .dash-nav{
+    display:flex;flex-direction:row;flex-wrap:nowrap;gap:6px;
+    overflow-x:auto;overflow-y:hidden;padding:2px 0 3px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .dash-nav::-webkit-scrollbar{display:none;}
+  .dash-nav a{
+    flex:0 0 auto;min-width:max-content;padding:7px 9px;
+    border:1px solid rgba(255,255,255,.055);font-size:11px;gap:6px;
+    background:rgba(255,255,255,.025);white-space:nowrap;
+  }
+  .dash-nav a .nav-ic{width:24px;height:24px;border-radius:7px;}
+  .dash-nav a svg{width:12px;height:12px;}
+  .nav-badge{font-size:8px;padding:2px 5px;}
+  .dash-logout{
+    position:absolute;right:10px;top:10px;margin:0!important;
+    width:32px;height:32px;padding:0!important;border-radius:9px;
+    display:flex;align-items:center;justify-content:center;font-size:0;
+    background:rgba(224,99,122,.12);border:1px solid rgba(224,99,122,.2);
+  }
+  .dash-logout svg{width:15px;height:15px;margin:0;}
+  .dash-main{
+    width:100%;max-width:none;min-width:0;min-height:calc(100dvh - 90px);
+    max-height:none;overflow:visible;padding:16px 12px 34px;
+  }
+  .page-section{width:100%;gap:14px;min-width:0;}
+
+  /* Common mobile typography / controls */
+  .stat-header{align-items:flex-start;gap:10px;}
+  .stat-header h2{font-size:17px;line-height:1.25;}
+  .stat-tabs{width:100%;overflow-x:auto;scrollbar-width:none;}
+  .stat-tabs::-webkit-scrollbar{display:none;}
+  .stat-tabs span{flex:0 0 auto;padding:7px 10px;font-size:10px;}
+  .gstat-grid{grid-template-columns:1fr 1fr!important;gap:8px;}
+  .gstat-card{min-width:0;padding:12px;}
+  .gstat-amount{font-size:18px!important;word-break:break-word;}
+  .gstat-label{font-size:10px!important;}
+  .gstat-sub{font-size:9px!important;line-height:1.35;}
+
+  /* Buttons / toolbars */
+  button,.btn,.action-btn{max-width:100%;}
+  .toolbar,.table-top,.rekap-toolbar,.order-table-heading{width:100%;}
+  .table-top,.rekap-toolbar{align-items:stretch;}
+  .table-top>*{max-width:100%;}
+  input,select,textarea{max-width:100%;font-size:16px!important;}
+
+  /* Generic grids */
+  .product-grid{grid-template-columns:1fr 1fr!important;gap:9px!important;}
+  .checkout-layout{grid-template-columns:1fr!important;gap:12px!important;}
+  .checkout-cart-panel{position:static!important;max-height:none;}
+  .cart-list{max-height:300px;}
+
+  /* Checkout workflow */
+  .workflow-switch{grid-template-columns:1fr!important;gap:8px;}
+  .order-status-tabs{grid-template-columns:1fr 1fr!important;gap:7px;}
+  .order-status-tab{min-width:0;padding:10px 8px;}
+  .order-status-tab strong{font-size:11px;}
+  .order-status-tab span{font-size:8px;}
+  .order-table-card{overflow:hidden;}
+  .order-table-heading{flex-direction:column;align-items:flex-start;gap:8px;}
+  .order-table-wrap,.table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .order-table-wrap table,.table-wrap table{min-width:620px;}
+
+  /* Rekap: compact but readable cards */
+  .rekap-system-section{padding:14px;margin-top:12px;border-radius:14px;}
+  .rekap-system-head{flex-direction:column;gap:8px;}
+  .rekap-system-head h2{font-size:17px;}
+  .rekap-system-head p{font-size:10px;max-width:none;}
+  .rekap-system-badge{align-self:flex-start;}
+  .rekap-system-kpis{grid-template-columns:1fr 1fr!important;gap:7px;}
+  .rekap-system-kpi{padding:10px;min-width:0;}
+  .rekap-system-kpi strong{font-size:15px;word-break:break-word;}
+  .rekap-info-grid{grid-template-columns:1fr!important;gap:9px;}
+  .rekap-product-card{grid-template-columns:28px minmax(0,1fr) 1fr!important;gap:7px;padding:9px;}
+  .rekap-product-stat{min-width:0;text-align:right;}
+  .rekap-product-stat:nth-last-child(-n+2){margin-top:3px;}
+  .rekap-product-stat b{font-size:9px;word-break:break-word;}
+  .rekap-month-card{grid-template-columns:1fr 1fr!important;gap:7px;padding:9px;}
+  .rekap-month-card>div:first-child{grid-column:1/-1;}
+
+  /* Prevent cards with fixed widths from forcing the viewport wider */
+  .card,.panel,.section-card,.modal,.modal-body,.modal-header,.modal-footer,
+  .ov-panel,.table-wrap,.order-table-card,.checkout-card,.checkout-cart-panel,
+  .profile-card,.hero-card{max-width:100%;min-width:0;}
+  .modal-overlay{padding:12px;}
+  .modal{width:100%!important;max-height:90dvh;overflow:auto;}
+
+  /* Dense two-column forms become single column */
+  .form-grid,.form-row,.input-grid,.settings-grid{grid-template-columns:1fr!important;}
+}
+
+@media (max-width:420px){
+  .dash-main{padding:13px 9px 30px;}
+  .dash-logo{padding-left:2px;font-size:12px;}
+  .dash-logo span{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .gstat-grid{grid-template-columns:1fr!important;}
+  .product-grid{grid-template-columns:1fr!important;}
+  .order-status-tabs{grid-template-columns:1fr 1fr!important;}
+  .rekap-system-kpis{grid-template-columns:1fr 1fr!important;}
+  .rekap-system-kpi strong{font-size:14px;}
+}
+
 </style>
 </head>
 <body>
@@ -1343,7 +1490,7 @@
         <div class="section-header">
           <div>
             <div class="section-title">Rekap Bulanan</div>
-            <div class="section-subtitle">Ringkasan omzet, modal, keuntungan, barang keluar, dan performa transaksi.</div>
+            <div class="section-subtitle">Laporan dipisahkan menjadi dua sistem agar omzet, modal, profit, transaksi, dan barang keluar tidak tercampur.</div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-outline btn-sm" onclick="exportExcelData()">Export Excel</button>
@@ -1352,39 +1499,65 @@
         </div>
 
         <div class="rekap-toolbar">
-          <div><b>Periode laporan</b><span>Data dihitung dari transaksi yang sudah Selesai.</span></div>
-          <div class="rekap-period" id="rekap-period-label">Semua periode</div>
+          <div><b>Periode laporan</b><span id="rekap-period-label">Semua transaksi yang sudah selesai</span></div>
+          <div class="rekap-period">Data otomatis dipisahkan berdasarkan sumber order</div>
         </div>
 
-        <div class="rekap-kpi-grid">
-          <div class="rekap-kpi revenue"><span class="kpi-label">Total Penjualan</span><strong id="rekap-total-revenue">$0</strong><small>Omzet transaksi selesai</small></div>
-          <div class="rekap-kpi cost"><span class="kpi-label">Total Modal</span><strong id="rekap-total-cost">$0</strong><small>Harga modal barang keluar</small></div>
-          <div class="rekap-kpi profit"><span class="kpi-label">Keuntungan Kotor</span><strong id="rekap-total-profit">$0</strong><small>Penjualan dikurangi modal</small></div>
-          <div class="rekap-kpi orders"><span class="kpi-label">Transaksi Selesai</span><strong id="rekap-total-orders">0</strong><small>Order berhasil diselesaikan</small></div>
-          <div class="rekap-kpi items"><span class="kpi-label">Barang Keluar</span><strong id="rekap-total-items">0</strong><small>Total quantity seluruh produk</small></div>
-          <div class="rekap-kpi avg"><span class="kpi-label">Rata-rata / Order</span><strong id="rekap-avg-order">$0</strong><small>Omzet rata-rata per transaksi</small></div>
-        </div>
-
-        <div class="rekap-detail-grid">
-          <div class="table-wrap rekap-panel">
-            <div class="rekap-panel-head"><div><h3>Produk Keluar</h3><p>Barang yang benar-benar keluar setelah order selesai.</p></div><span id="rekap-product-count">0 produk</span></div>
-            <div class="table-scroll"><table class="tx-table rekap-product-table"><thead><tr><th>Produk</th><th>Jenis</th><th>Qty</th><th>Omzet</th><th>Modal</th><th>Profit</th></tr></thead><tbody id="rekap-product-tbody"></tbody></table></div>
+        <div class="rekap-system-section rekap-biz-system">
+          <div class="rekap-system-head">
+            <div>
+              <div class="rekap-system-kicker">SISTEM 01</div>
+              <h2>Bisnis</h2>
+              <p>Rekap khusus barang yang dibeli melalui menu <b>Bisnis</b>. Data pada bagian ini tidak digabung dengan transaksi dari menu Checkout.</p>
+            </div>
+            <div class="rekap-system-badge">DATA BISNIS</div>
           </div>
-          <div class="table-wrap rekap-panel">
-            <div class="rekap-panel-head"><div><h3>Ringkasan Per Bulan</h3><p>Perbandingan omzet dan keuntungan tiap bulan.</p></div></div>
-            <div class="table-scroll"><table class="tx-table"><thead><tr><th>Bulan</th><th>Order</th><th>Qty</th><th>Omzet</th><th>Modal</th><th>Profit</th></tr></thead><tbody id="rekap-monthly-tbody"></tbody></table></div>
+          <div class="rekap-system-kpis">
+            <div class="rekap-system-kpi"><span>Total Penjualan</span><strong id="rekap-biz-revenue">$0</strong><small>Omzet transaksi selesai</small></div>
+            <div class="rekap-system-kpi"><span>Total Modal</span><strong id="rekap-biz-cost">$0</strong><small>Modal barang yang keluar</small></div>
+            <div class="rekap-system-kpi"><span>Keuntungan</span><strong id="rekap-biz-profit">$0</strong><small>Penjualan dikurangi modal</small></div>
+            <div class="rekap-system-kpi"><span>Transaksi</span><strong id="rekap-biz-orders">0</strong><small>Order bisnis selesai</small></div>
+            <div class="rekap-system-kpi"><span>Barang Keluar</span><strong id="rekap-biz-items">0</strong><small>Total quantity terjual</small></div>
+          </div>
+          <div class="rekap-info-grid">
+            <div class="rekap-info-panel">
+              <div class="rekap-panel-head"><div><h3>Barang Bisnis yang Keluar</h3><p>Daftar produk dan performanya berdasarkan transaksi selesai.</p></div><span id="rekap-biz-product-count">0 produk</span></div>
+              <div id="rekap-biz-products" class="rekap-product-list"></div>
+            </div>
+            <div class="rekap-info-panel">
+              <div class="rekap-panel-head"><div><h3>Ringkasan Bulanan Bisnis</h3><p>Omzet, modal, dan keuntungan setiap periode.</p></div></div>
+              <div id="rekap-biz-months" class="rekap-month-list"></div>
+            </div>
           </div>
         </div>
 
-        <div class="table-wrap rekap-panel" style="margin-top:16px">
-          <div class="rekap-panel-head"><div><h3>Detail Transaksi Selesai</h3><p>Rincian member, barang, quantity, omzet, modal, dan profit.</p></div><span id="rekap-detail-count">0 transaksi</span></div>
-          <div class="table-scroll"><table class="tx-table rekap-detail-table"><thead><tr><th>Tanggal</th><th>ID</th><th>Member</th><th>Produk Keluar</th><th>Qty</th><th>Omzet</th><th>Modal</th><th>Profit</th></tr></thead><tbody id="rekap-detail-tbody"></tbody></table></div>
+        <div class="rekap-system-section rekap-checkout-system">
+          <div class="rekap-system-head">
+            <div>
+              <div class="rekap-system-kicker">SISTEM 02</div>
+              <h2>Checkout</h2>
+              <p>Rekap khusus barang yang dibeli melalui menu <b>Checkout</b>. Keranjang dan transaksi checkout memiliki laporan sendiri dan tidak tercampur dengan Bisnis.</p>
+            </div>
+            <div class="rekap-system-badge">DATA CHECKOUT</div>
+          </div>
+          <div class="rekap-system-kpis">
+            <div class="rekap-system-kpi"><span>Total Penjualan</span><strong id="rekap-checkout-revenue">$0</strong><small>Omzet transaksi selesai</small></div>
+            <div class="rekap-system-kpi"><span>Total Modal</span><strong id="rekap-checkout-cost">$0</strong><small>Modal barang yang keluar</small></div>
+            <div class="rekap-system-kpi"><span>Keuntungan</span><strong id="rekap-checkout-profit">$0</strong><small>Penjualan dikurangi modal</small></div>
+            <div class="rekap-system-kpi"><span>Transaksi</span><strong id="rekap-checkout-orders">0</strong><small>Order checkout selesai</small></div>
+            <div class="rekap-system-kpi"><span>Barang Keluar</span><strong id="rekap-checkout-items">0</strong><small>Total quantity terjual</small></div>
+          </div>
+          <div class="rekap-info-grid">
+            <div class="rekap-info-panel">
+              <div class="rekap-panel-head"><div><h3>Barang Checkout yang Keluar</h3><p>Produk dari transaksi Checkout yang sudah benar-benar selesai.</p></div><span id="rekap-checkout-product-count">0 produk</span></div>
+              <div id="rekap-checkout-products" class="rekap-product-list"></div>
+            </div>
+            <div class="rekap-info-panel">
+              <div class="rekap-panel-head"><div><h3>Ringkasan Bulanan Checkout</h3><p>Omzet, modal, dan keuntungan setiap periode Checkout.</p></div></div>
+              <div id="rekap-checkout-months" class="rekap-month-list"></div>
+            </div>
+          </div>
         </div>
-
-        <div class="rekap-section-title"><span class="dot" style="background:#4ad8a8"></span> Rekap Bisnis</div>
-        <div class="table-wrap" style="margin-bottom:20px"><table><thead><tr><th>Bulan</th><th>Transaksi</th><th>Omzet</th><th>Modal</th><th>Profit</th></tr></thead><tbody id="rekap-biz-tbody"></tbody></table></div>
-        <div class="rekap-section-title"><span class="dot" style="background:#e0637a"></span> Rekap Checkout</div>
-        <div class="table-wrap"><table><thead><tr><th>Bulan</th><th>Transaksi</th><th>Omzet</th><th>Modal</th><th>Profit</th></tr></thead><tbody id="rekap-illegal-tbody"></tbody></table></div>
       </div>
 
       <!-- ── BISNIS (LEGAL STOCK, ADMIN ONLY) ── -->
@@ -3421,47 +3594,81 @@ function getCompletedLines(typeFilter) {
 }
 
 function renderRekapBulanan() {
-  const bizBody = document.getElementById('rekap-biz-tbody');
-  const illegalBody = document.getElementById('rekap-illegal-tbody');
-  if (!bizBody || !illegalBody) return;
-  const allCompleted = orders.filter(o => o.status === 'selesai');
-  const lines = getCompletedLines();
-  const totalRevenue = allCompleted.reduce((a,o)=>a+Number(o.total||0),0);
-  const totalCost = lines.reduce((a,x)=>a+x.cost,0);
-  const totalQty = lines.reduce((a,x)=>a+x.qty,0);
-  const totalProfit = totalRevenue-totalCost;
   const el = id => document.getElementById(id);
-  if(el('rekap-total-revenue')) el('rekap-total-revenue').textContent=fmt(totalRevenue);
-  if(el('rekap-total-cost')) el('rekap-total-cost').textContent=fmt(totalCost);
-  if(el('rekap-total-profit')) { el('rekap-total-profit').textContent=(totalProfit<0?'-':'')+fmt(Math.abs(totalProfit)); el('rekap-total-profit').className=totalProfit<0?'profit-negative':''; }
-  if(el('rekap-total-orders')) el('rekap-total-orders').textContent=allCompleted.length;
-  if(el('rekap-total-items')) el('rekap-total-items').textContent=totalQty;
-  if(el('rekap-avg-order')) el('rekap-avg-order').textContent=fmt(allCompleted.length?totalRevenue/allCompleted.length:0);
-  if(el('rekap-detail-count')) el('rekap-detail-count').textContent=`${allCompleted.length} transaksi`;
-  if(el('rekap-product-count')) el('rekap-product-count').textContent=`${new Set(lines.map(x=>x.product?.id||x.name)).size} produk`;
-  if(el('rekap-period-label')) el('rekap-period-label').textContent=allCompleted.length?'Seluruh transaksi selesai':'Belum ada transaksi selesai';
+  const renderSystem = (type, prefix) => {
+    const list = getCompletedLines(type);
+    const completedOrders = [...new Set(list.map(x => x.order.id))].map(id => orders.find(o => o.id === id)).filter(Boolean);
+    const revenue = list.reduce((sum, x) => sum + Number(x.revenue || 0), 0);
+    const cost = list.reduce((sum, x) => sum + Number(x.cost || 0), 0);
+    const qty = list.reduce((sum, x) => sum + Number(x.qty || 0), 0);
+    const profit = revenue - cost;
 
-  const empty = colspan => `<tr><td colspan="${colspan}"><div class="empty-state" style="padding:18px 4px"><p style="font-size:10px">Belum ada data transaksi selesai</p></div></td></tr>`;
-  const productMap={};
-  lines.forEach(x=>{const k=x.product?.id||x.name;if(!productMap[k]) productMap[k]={name:x.name, type:getOrderType(x.order)==='illegal'?'Checkout':'Bisnis', qty:0,revenue:0,cost:0}; productMap[k].qty+=x.qty;productMap[k].revenue+=x.revenue;productMap[k].cost+=x.cost;});
-  const productRows=Object.values(productMap).sort((a,b)=>b.revenue-a.revenue);
-  const pt=document.getElementById('rekap-product-tbody');
-  if(pt) pt.innerHTML=productRows.length?productRows.map(x=>`<tr><td class="tx-name">${escapeHtml(x.name)}</td><td><span class="product-type">${x.type}</span></td><td>${x.qty}</td><td style="color:var(--accent-blue)">${fmt(x.revenue)}</td><td>${fmt(x.cost)}</td><td class="${x.revenue-x.cost>=0?'profit-positive':'profit-negative'}">${x.revenue-x.cost<0?'-':''}${fmt(Math.abs(x.revenue-x.cost))}</td></tr>`).join(''):empty(6);
+    if (el(`rekap-${prefix}-revenue`)) el(`rekap-${prefix}-revenue`).textContent = fmt(revenue);
+    if (el(`rekap-${prefix}-cost`)) el(`rekap-${prefix}-cost`).textContent = fmt(cost);
+    if (el(`rekap-${prefix}-profit`)) {
+      el(`rekap-${prefix}-profit`).textContent = (profit < 0 ? '-' : '') + fmt(Math.abs(profit));
+      el(`rekap-${prefix}-profit`).className = profit < 0 ? 'profit-negative' : '';
+    }
+    if (el(`rekap-${prefix}-orders`)) el(`rekap-${prefix}-orders`).textContent = completedOrders.length;
+    if (el(`rekap-${prefix}-items`)) el(`rekap-${prefix}-items`).textContent = qty;
 
-  const monthly={};
-  allCompleted.forEach(o=>{const d=new Date(o.createdAt);const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!monthly[k]) monthly[k]={date:new Date(d.getFullYear(),d.getMonth(),1),orders:0,qty:0,revenue:0,cost:0};monthly[k].orders++;monthly[k].revenue+=Number(o.total||0);});
-  lines.forEach(x=>{const d=new Date(x.order.createdAt);const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(monthly[k]){monthly[k].qty+=x.qty;monthly[k].cost+=x.cost;}});
-  const mt=document.getElementById('rekap-monthly-tbody'); const months=Object.values(monthly).sort((a,b)=>b.date-a.date);
-  if(mt) mt.innerHTML=months.length?months.map(x=>{const p=x.revenue-x.cost;return `<tr><td style="text-transform:capitalize">${x.date.toLocaleDateString('id-ID',{month:'long',year:'numeric'})}</td><td>${x.orders}</td><td>${x.qty}</td><td style="color:var(--accent-blue)">${fmt(x.revenue)}</td><td>${fmt(x.cost)}</td><td class="${p>=0?'profit-positive':'profit-negative'}">${p<0?'-':''}${fmt(Math.abs(p))}</td></tr>`}).join(''):empty(6);
+    const productMap = {};
+    list.forEach(x => {
+      const key = x.product?.id || x.name;
+      if (!productMap[key]) productMap[key] = { name: x.name, qty: 0, revenue: 0, cost: 0 };
+      productMap[key].qty += Number(x.qty || 0);
+      productMap[key].revenue += Number(x.revenue || 0);
+      productMap[key].cost += Number(x.cost || 0);
+    });
+    const productsOut = Object.values(productMap).sort((a,b) => b.revenue - a.revenue);
+    if (el(`rekap-${prefix}-product-count`)) el(`rekap-${prefix}-product-count`).textContent = `${productsOut.length} produk`;
+    const productWrap = el(`rekap-${prefix}-products`);
+    if (productWrap) {
+      productWrap.innerHTML = productsOut.length ? productsOut.map((x, i) => {
+        const p = x.revenue - x.cost;
+        return `<div class="rekap-product-card">
+          <div class="rekap-product-rank">${String(i + 1).padStart(2,'0')}</div>
+          <div class="rekap-product-main"><strong>${escapeHtml(x.name)}</strong><span>${x.qty} unit keluar</span></div>
+          <div class="rekap-product-stat"><small>Omzet</small><b>${fmt(x.revenue)}</b></div>
+          <div class="rekap-product-stat"><small>Modal</small><b>${fmt(x.cost)}</b></div>
+          <div class="rekap-product-stat"><small>Profit</small><b class="${p < 0 ? 'profit-negative' : 'profit-positive'}">${p < 0 ? '-' : ''}${fmt(Math.abs(p))}</b></div>
+        </div>`;
+      }).join('') : `<div class="rekap-empty">Belum ada transaksi ${prefix === 'biz' ? 'Bisnis' : 'Checkout'} yang selesai.</div>`;
+    }
 
-  const dt=document.getElementById('rekap-detail-tbody');
-  const sorted=[...allCompleted].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-  if(dt) dt.innerHTML=sorted.length?sorted.map(o=>{const ol=lines.filter(x=>x.order.id===o.id);const qty=ol.reduce((a,x)=>a+x.qty,0);const cost=ol.reduce((a,x)=>a+x.cost,0);const p=Number(o.total||0)-cost;const names=ol.map(x=>`${escapeHtml(x.name)} ×${x.qty}`).join('<br>');return `<tr><td style="white-space:nowrap">${new Date(o.createdAt).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}</td><td>#${String(o.id).padStart(4,'0')}</td><td>${memberTag(o.buyer,o.buyerUsername)}</td><td>${names}</td><td>${qty}</td><td style="color:var(--accent-blue)">${fmt(o.total)}</td><td>${fmt(cost)}</td><td class="${p>=0?'profit-positive':'profit-negative'}">${p<0?'-':''}${fmt(Math.abs(p))}</td></tr>`}).join(''):empty(8);
+    const monthly = {};
+    completedOrders.forEach(o => {
+      const d = new Date(o.createdAt);
+      const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      if (!monthly[key]) monthly[key] = { date: new Date(d.getFullYear(), d.getMonth(), 1), orders: 0, qty: 0, revenue: 0, cost: 0 };
+      monthly[key].orders++;
+    });
+    list.forEach(x => {
+      const d = new Date(x.order.createdAt);
+      const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      if (!monthly[key]) monthly[key] = { date: new Date(d.getFullYear(), d.getMonth(), 1), orders: 0, qty: 0, revenue: 0, cost: 0 };
+      monthly[key].qty += Number(x.qty || 0);
+      monthly[key].revenue += Number(x.revenue || 0);
+      monthly[key].cost += Number(x.cost || 0);
+    });
+    const months = Object.values(monthly).sort((a,b) => b.date - a.date);
+    const monthWrap = el(`rekap-${prefix}-months`);
+    if (monthWrap) {
+      monthWrap.innerHTML = months.length ? months.map(m => {
+        const mp = m.revenue - m.cost;
+        return `<div class="rekap-month-card">
+          <div><strong>${m.date.toLocaleDateString('id-ID',{month:'long',year:'numeric'})}</strong><span>${m.orders} transaksi · ${m.qty} unit</span></div>
+          <div><small>Omzet</small><b>${fmt(m.revenue)}</b></div>
+          <div><small>Modal</small><b>${fmt(m.cost)}</b></div>
+          <div><small>Profit</small><b class="${mp < 0 ? 'profit-negative' : 'profit-positive'}">${mp < 0 ? '-' : ''}${fmt(Math.abs(mp))}</b></div>
+        </div>`;
+      }).join('') : `<div class="rekap-empty">Belum ada riwayat bulanan.</div>`;
+    }
+  };
 
-  const bizData=buildMonthlyRekap('biz');
-  bizBody.innerHTML=bizData.length?bizData.map(r=>`<tr><td style="text-transform:capitalize">${r.label}</td><td>${r.count}</td><td>${fmt(r.revenue)}</td><td>${fmt(r.cost)}</td><td style="color:${r.profit>=0?'var(--success)':'var(--danger)'}">${r.profit<0?'-':''}${fmt(Math.abs(r.profit))}</td></tr>`).join(''):empty(5);
-  const illegalData=buildMonthlyRekap('illegal');
-  illegalBody.innerHTML=illegalData.length?illegalData.map(r=>`<tr><td style="text-transform:capitalize">${r.label}</td><td>${r.count}</td><td>${fmt(r.revenue)}</td><td>${fmt(r.cost)}</td><td style="color:${r.profit>=0?'var(--success)':'var(--danger)'}">${r.profit<0?'-':''}${fmt(Math.abs(r.profit))}</td></tr>`).join(''):empty(5);
+  renderSystem('biz', 'biz');
+  renderSystem('illegal', 'checkout');
+  if (el('rekap-period-label')) el('rekap-period-label').textContent = 'Hanya transaksi dengan status Selesai yang dihitung';
 }
 
 function renderStatusList() {
