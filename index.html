@@ -956,6 +956,43 @@
   .cart-status{font-size:10px;color:var(--warning);background:rgba(247,185,85,.08);border:1px solid rgba(247,185,85,.16);border-radius:9px;padding:8px 10px;margin-top:10px;line-height:1.5;}
   @media (max-width:900px){.checkout-layout{grid-template-columns:1fr}.checkout-cart-panel{position:static}.cart-list{max-height:330px;}}
 
+
+  /* ===== ORDER WORKFLOW UPGRADE ===== */
+  .workflow-switch{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:10px;margin:4px 0 12px;}
+  .workflow-tab{position:relative;display:flex;align-items:center;gap:12px;text-align:left;padding:13px 15px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.018));color:#fff;cursor:pointer;overflow:hidden;}
+  .workflow-tab:after{content:"";position:absolute;width:120px;height:120px;right:-35px;top:-55px;border-radius:50%;background:var(--wf-bg);opacity:.18;}
+  .workflow-tab.active{border-color:var(--wf);box-shadow:0 0 0 1px color-mix(in srgb,var(--wf) 45%,transparent),0 12px 28px rgba(0,0,0,.22);}
+  .workflow-tab:first-child{--wf:#4d8dff;--wf-bg:#4d8dff}.workflow-tab:nth-child(2){--wf:#c66bff;--wf-bg:#c66bff}
+  .workflow-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--wf),color-mix(in srgb,var(--wf) 45%,#18213d));box-shadow:0 7px 16px color-mix(in srgb,var(--wf) 25%,transparent);flex:none;}
+  .workflow-tab b{display:block;font-size:12px}.workflow-tab small{display:block;margin-top:3px;color:var(--muted);font-size:10px}
+  .order-status-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
+  .order-status-tab{position:relative;display:flex;align-items:center;gap:9px;min-height:58px;padding:9px 11px;border:1px solid rgba(255,255,255,.07);border-radius:13px;background:linear-gradient(145deg,var(--status-bg),rgba(255,255,255,.018));color:#b8bfd6;cursor:pointer;text-align:left;overflow:hidden;}
+  .order-status-tab:after{content:"";position:absolute;width:85px;height:85px;right:-25px;bottom:-45px;border-radius:50%;background:var(--status);opacity:.11;}
+  .order-status-tab.active{color:#fff;border-color:color-mix(in srgb,var(--status) 55%,transparent);box-shadow:inset 0 0 24px color-mix(in srgb,var(--status) 7%,transparent);}
+  .status-symbol{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:9px;background:color-mix(in srgb,var(--status) 16%,transparent);color:var(--status);font-size:8px;font-weight:900;letter-spacing:.4px;flex:none;}
+  .status-all{--status:#5aa0e0;--status-bg:rgba(90,160,224,.09)}.status-pending{--status:#f7b955;--status-bg:rgba(247,185,85,.08)}.status-acc-order{--status:#4ad8a8;--status-bg:rgba(74,216,168,.08)}.status-acc-barang{--status:#39c8dc;--status-bg:rgba(57,200,220,.08)}.status-selesai{--status:#9c73ff;--status-bg:rgba(156,115,255,.08)}
+  .order-table-card{padding:18px 18px 8px;}
+  .order-table-heading{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:15px;}
+  .order-table-heading h3{margin:0;color:#fff;font-size:15px}.order-table-heading p{margin:5px 0 0;color:var(--muted);font-size:10.5px}
+  .order-legend{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.legend-item{padding:5px 8px;border-radius:7px;font-size:9px;font-weight:800;background:rgba(255,255,255,.04);color:var(--muted)}.legend-item.pending{color:#f7b955}.legend-item.acc{color:#4ad8a8}.legend-item.ship{color:#39c8dc}.legend-item.done{color:#9c73ff}
+  .order-table-card .tx-table th{padding-top:10px;background:rgba(255,255,255,.025)}
+  .order-table-card .tx-table td{vertical-align:middle}
+
+  /* ===== MONTHLY REPORT UPGRADE ===== */
+  .section-subtitle{font-size:10.5px;color:var(--muted);margin-top:4px;}
+  .rekap-toolbar{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;margin-bottom:14px;border:1px solid rgba(255,255,255,.07);border-radius:13px;background:linear-gradient(120deg,rgba(90,160,224,.08),rgba(255,255,255,.025));}
+  .rekap-toolbar b{display:block;color:#fff;font-size:11.5px}.rekap-toolbar span{display:block;color:var(--muted);font-size:9.5px;margin-top:3px}.rekap-period{padding:7px 11px;border-radius:8px;background:rgba(255,255,255,.05);color:#fff;font-size:10px;font-weight:800}
+  .rekap-kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px;}
+  .rekap-kpi{position:relative;min-height:112px;padding:15px;border-radius:14px;border:1px solid rgba(255,255,255,.07);background:linear-gradient(145deg,var(--rk-bg),rgba(255,255,255,.018));overflow:hidden;}
+  .rekap-kpi:after{content:"";position:absolute;width:90px;height:90px;right:-35px;top:-35px;border-radius:50%;background:var(--rk);opacity:.12}.rekap-kpi.revenue{--rk:#5aa0e0;--rk-bg:rgba(90,160,224,.08)}.rekap-kpi.cost{--rk:#e0637a;--rk-bg:rgba(224,99,122,.07)}.rekap-kpi.profit{--rk:#4ad8a8;--rk-bg:rgba(74,216,168,.07)}.rekap-kpi.orders{--rk:#9c73ff;--rk-bg:rgba(156,115,255,.07)}.rekap-kpi.items{--rk:#39c8dc;--rk-bg:rgba(57,200,220,.07)}.rekap-kpi.avg{--rk:#f7b955;--rk-bg:rgba(247,185,85,.07)}
+  .kpi-label{display:block;font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:800}.rekap-kpi strong{display:block;margin-top:13px;color:var(--rk);font-size:19px;font-family:var(--display-heavy)}.rekap-kpi small{display:block;margin-top:5px;color:var(--muted);font-size:8.5px}
+  .rekap-detail-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:14px;}
+  .rekap-panel{padding:16px;}
+  .rekap-panel-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:12px}.rekap-panel-head h3{margin:0;color:#fff;font-size:13px}.rekap-panel-head p{margin:4px 0 0;color:var(--muted);font-size:9.5px}.rekap-panel-head>span{padding:5px 8px;border-radius:7px;background:rgba(255,255,255,.05);color:var(--muted);font-size:9px;font-weight:800;white-space:nowrap}
+  .table-scroll{overflow:auto;max-width:100%}.rekap-product-table{min-width:650px}.rekap-detail-table{min-width:900px}.rekap-panel .tx-table th{padding-top:6px}.rekap-panel .tx-table td{font-size:11px;padding:11px 8px}.profit-positive{color:#4ad8a8!important}.profit-negative{color:#e0637a!important}.product-type{font-size:8px;text-transform:uppercase;letter-spacing:.6px;padding:3px 6px;border-radius:5px;background:rgba(255,255,255,.06);color:var(--muted)}
+  @media(max-width:1100px){.rekap-kpi-grid{grid-template-columns:repeat(3,1fr)}.order-status-tabs{grid-template-columns:repeat(3,1fr)}.rekap-detail-grid{grid-template-columns:1fr}}
+  @media(max-width:700px){.workflow-switch{grid-template-columns:1fr}.order-status-tabs{grid-template-columns:repeat(2,1fr)}.rekap-kpi-grid{grid-template-columns:repeat(2,1fr)}.order-table-heading{flex-direction:column}.order-legend{justify-content:flex-start}.rekap-toolbar{align-items:flex-start;gap:10px;flex-direction:column}}
+
   /* modals */
   .modal-overlay{position:fixed;inset:0;background:rgba(4,6,16,0.65);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;}
   .modal-overlay.open{display:flex;}
@@ -1304,28 +1341,50 @@
       <!-- ── REKAP BULANAN (ADMIN ONLY) ── -->
       <div class="page-section" id="page-rekap">
         <div class="section-header">
-          <div class="section-title">📅 Rekap Bulanan</div>
+          <div>
+            <div class="section-title">Rekap Bulanan</div>
+            <div class="section-subtitle">Ringkasan omzet, modal, keuntungan, barang keluar, dan performa transaksi.</div>
+          </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-outline btn-sm" onclick="exportExcelData()">⬇️ Export Excel</button>
-            <button class="btn btn-outline btn-sm admin-only-btn" style="border-color:var(--danger);color:var(--danger)" onclick="confirmResetData()">🗑️ Reset Data</button>
+            <button class="btn btn-outline btn-sm" onclick="exportExcelData()">Export Excel</button>
+            <button class="btn btn-outline btn-sm admin-only-btn" style="border-color:var(--danger);color:var(--danger)" onclick="confirmResetData()">Reset Data</button>
           </div>
         </div>
 
-        <div class="rekap-section-title"><span class="dot" style="background:#4ad8a8"></span> Rekap Bulanan — Omzet Bisnis</div>
-        <div class="table-wrap" style="margin-bottom:24px">
-          <table>
-            <thead><tr><th>Bulan</th><th>Transaksi</th><th>Omzet</th><th>Modal</th><th>Profit</th></tr></thead>
-            <tbody id="rekap-biz-tbody"></tbody>
-          </table>
+        <div class="rekap-toolbar">
+          <div><b>Periode laporan</b><span>Data dihitung dari transaksi yang sudah Selesai.</span></div>
+          <div class="rekap-period" id="rekap-period-label">Semua periode</div>
         </div>
 
-        <div class="rekap-section-title"><span class="dot" style="background:#e0637a"></span> Rekap Bulanan — Omzet Brangkas (Bisnis Ilegal / Checkout)</div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Bulan</th><th>Transaksi</th><th>Omzet</th><th>Modal</th><th>Profit</th></tr></thead>
-            <tbody id="rekap-illegal-tbody"></tbody>
-          </table>
+        <div class="rekap-kpi-grid">
+          <div class="rekap-kpi revenue"><span class="kpi-label">Total Penjualan</span><strong id="rekap-total-revenue">$0</strong><small>Omzet transaksi selesai</small></div>
+          <div class="rekap-kpi cost"><span class="kpi-label">Total Modal</span><strong id="rekap-total-cost">$0</strong><small>Harga modal barang keluar</small></div>
+          <div class="rekap-kpi profit"><span class="kpi-label">Keuntungan Kotor</span><strong id="rekap-total-profit">$0</strong><small>Penjualan dikurangi modal</small></div>
+          <div class="rekap-kpi orders"><span class="kpi-label">Transaksi Selesai</span><strong id="rekap-total-orders">0</strong><small>Order berhasil diselesaikan</small></div>
+          <div class="rekap-kpi items"><span class="kpi-label">Barang Keluar</span><strong id="rekap-total-items">0</strong><small>Total quantity seluruh produk</small></div>
+          <div class="rekap-kpi avg"><span class="kpi-label">Rata-rata / Order</span><strong id="rekap-avg-order">$0</strong><small>Omzet rata-rata per transaksi</small></div>
         </div>
+
+        <div class="rekap-detail-grid">
+          <div class="table-wrap rekap-panel">
+            <div class="rekap-panel-head"><div><h3>Produk Keluar</h3><p>Barang yang benar-benar keluar setelah order selesai.</p></div><span id="rekap-product-count">0 produk</span></div>
+            <div class="table-scroll"><table class="tx-table rekap-product-table"><thead><tr><th>Produk</th><th>Jenis</th><th>Qty</th><th>Omzet</th><th>Modal</th><th>Profit</th></tr></thead><tbody id="rekap-product-tbody"></tbody></table></div>
+          </div>
+          <div class="table-wrap rekap-panel">
+            <div class="rekap-panel-head"><div><h3>Ringkasan Per Bulan</h3><p>Perbandingan omzet dan keuntungan tiap bulan.</p></div></div>
+            <div class="table-scroll"><table class="tx-table"><thead><tr><th>Bulan</th><th>Order</th><th>Qty</th><th>Omzet</th><th>Modal</th><th>Profit</th></tr></thead><tbody id="rekap-monthly-tbody"></tbody></table></div>
+          </div>
+        </div>
+
+        <div class="table-wrap rekap-panel" style="margin-top:16px">
+          <div class="rekap-panel-head"><div><h3>Detail Transaksi Selesai</h3><p>Rincian member, barang, quantity, omzet, modal, dan profit.</p></div><span id="rekap-detail-count">0 transaksi</span></div>
+          <div class="table-scroll"><table class="tx-table rekap-detail-table"><thead><tr><th>Tanggal</th><th>ID</th><th>Member</th><th>Produk Keluar</th><th>Qty</th><th>Omzet</th><th>Modal</th><th>Profit</th></tr></thead><tbody id="rekap-detail-tbody"></tbody></table></div>
+        </div>
+
+        <div class="rekap-section-title"><span class="dot" style="background:#4ad8a8"></span> Rekap Bisnis</div>
+        <div class="table-wrap" style="margin-bottom:20px"><table><thead><tr><th>Bulan</th><th>Transaksi</th><th>Omzet</th><th>Modal</th><th>Profit</th></tr></thead><tbody id="rekap-biz-tbody"></tbody></table></div>
+        <div class="rekap-section-title"><span class="dot" style="background:#e0637a"></span> Rekap Checkout</div>
+        <div class="table-wrap"><table><thead><tr><th>Bulan</th><th>Transaksi</th><th>Omzet</th><th>Modal</th><th>Profit</th></tr></thead><tbody id="rekap-illegal-tbody"></tbody></table></div>
       </div>
 
       <!-- ── BISNIS (LEGAL STOCK, ADMIN ONLY) ── -->
@@ -1385,44 +1444,47 @@
         </div>
         <div class="gstat-grid admin-only" style="margin-bottom:18px">
           <div class="gstat-card c-blue">
-            <div class="gstat-top"><div class="gstat-icon">📋</div><div class="gstat-label">Total Order</div></div>
+            <div class="gstat-top"><div class="gstat-icon">01</div><div class="gstat-label">Total Order</div></div>
             <div class="gstat-amount" id="stat-order-total">0</div>
             <div class="gstat-sub">Semua order masuk</div>
           </div>
           <div class="gstat-card c-orange">
-            <div class="gstat-top"><div class="gstat-icon">⏳</div><div class="gstat-label">Pending</div></div>
+            <div class="gstat-top"><div class="gstat-icon">02</div><div class="gstat-label">Pending</div></div>
             <div class="gstat-amount" id="stat-order-pending">0</div>
             <div class="gstat-sub">Menunggu konfirmasi</div>
           </div>
           <div class="gstat-card c-skyblue">
-            <div class="gstat-top"><div class="gstat-icon">✅</div><div class="gstat-label">ACC Order</div></div>
+            <div class="gstat-top"><div class="gstat-icon">03</div><div class="gstat-label">ACC Order</div></div>
             <div class="gstat-amount" id="stat-order-accorder">0</div>
             <div class="gstat-sub">Order diterima</div>
           </div>
           <div class="gstat-card c-purple">
-            <div class="gstat-top"><div class="gstat-icon">📦</div><div class="gstat-label">ACC Barang</div></div>
+            <div class="gstat-top"><div class="gstat-icon">04</div><div class="gstat-label">ACC Barang</div></div>
             <div class="gstat-amount" id="stat-order-accbarang">0</div>
             <div class="gstat-sub">Barang diproses</div>
           </div>
           <div class="gstat-card c-green">
-            <div class="gstat-top"><div class="gstat-icon">🎯</div><div class="gstat-label">Selesai</div></div>
+            <div class="gstat-top"><div class="gstat-icon">05</div><div class="gstat-label">Selesai</div></div>
             <div class="gstat-amount" id="stat-order-selesai">0</div>
             <div class="gstat-sub">Order selesai</div>
           </div>
         </div>
-        <div class="cat-tabs" id="order-type-tabs">
-          <div class="cat-tab active" onclick="filterOrderType('biz',this)">🏪 Order Bisnis</div>
-          <div class="cat-tab" onclick="filterOrderType('illegal',this)">🔫 Order Checkout</div>
+        <div class="workflow-switch" id="order-type-tabs">
+          <button class="workflow-tab active" onclick="filterOrderType('biz',this)"><span class="workflow-mark biz-mark"></span><span><b>Order Bisnis</b><small>Transaksi bisnis</small></span></button>
+          <button class="workflow-tab" onclick="filterOrderType('illegal',this)"><span class="workflow-mark checkout-mark"></span><span><b>Order Checkout</b><small>Transaksi checkout</small></span></button>
         </div>
-        <div class="cat-tabs">
-          <div class="cat-tab active" onclick="filterOrder('all',this)">📋 Semua</div>
-          <div class="cat-tab" onclick="filterOrder('pending',this)">⏳ Pending</div>
-          <div class="cat-tab" onclick="filterOrder('acc_order',this)">✅ ACC Order</div>
-          <div class="cat-tab" onclick="filterOrder('acc_barang',this)">📦 ACC Barang</div>
-          <div class="cat-tab" onclick="filterOrder('selesai',this)">🎯 Selesai</div>
+        <div class="order-status-tabs" id="order-status-tabs">
+          <button class="order-status-tab active status-all" onclick="filterOrder('all',this)"><span class="status-symbol">ALL</span><span>Semua</span></button>
+          <button class="order-status-tab status-pending" onclick="filterOrder('pending',this)"><span class="status-symbol">01</span><span>Pending</span></button>
+          <button class="order-status-tab status-acc-order" onclick="filterOrder('acc_order',this)"><span class="status-symbol">02</span><span>ACC Order</span></button>
+          <button class="order-status-tab status-acc-barang" onclick="filterOrder('acc_barang',this)"><span class="status-symbol">03</span><span>ACC Barang</span></button>
+          <button class="order-status-tab status-selesai" onclick="filterOrder('selesai',this)"><span class="status-symbol">04</span><span>Selesai</span></button>
         </div>
-        <div class="payment-card">
-          <h3><span id="order-table-title">🏪 Daftar Order Bisnis</span></h3>
+        <div class="payment-card order-table-card">
+          <div class="order-table-heading">
+            <div><h3><span id="order-table-title">Daftar Order Bisnis</span></h3><p>Kelola alur persetujuan dan pengiriman barang dari satu tempat.</p></div>
+            <div class="order-legend"><span class="legend-item pending">Pending</span><span class="legend-item acc">ACC Order</span><span class="legend-item ship">ACC Barang</span><span class="legend-item done">Selesai</span></div>
+          </div>
           <div style="overflow-x:auto">
             <table class="tx-table">
               <thead><tr><th>ID</th><th>Member</th><th id="order-kelompok-th">Kelompok</th><th>Produk</th><th>Qty</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
@@ -1436,8 +1498,8 @@
       <div class="page-section" id="page-checkout">
         <div class="section-header">
           <div class="section-title">Checkout</div>
-          <button class="btn btn-outline admin-only-btn" onclick="openKelolaCheckoutCatModal()">⚙️ Kategori Dijual</button>
-          <button class="btn btn-primary admin-only-btn" onclick="openAddProductModal('weapon','illegal')">+ Tambah Produk</button>
+          <button class="btn btn-outline admin-only-btn" onclick="openKelolaCheckoutCatModal()">Kategori Dijual</button>
+          <button class="btn btn-primary admin-only-btn" onclick="openAddProductModal('weapon','illegal')">Tambah Produk</button>
         </div>
         <div class="checkout-layout">
           <div class="checkout-catalog-panel">
@@ -1447,7 +1509,7 @@
           </div>
           <div class="checkout-cart-panel">
             <div class="cart-head">
-              <div class="cart-title">🛒 Keranjang</div>
+              <div class="cart-title">Keranjang Checkout</div>
               <span class="cart-count" id="cart-count">0 barang</span>
             </div>
             <div class="cart-list" id="checkout-cart-list"></div>
@@ -1457,7 +1519,7 @@
               <div class="cart-summary-row total"><span>Total</span><span id="cart-grand-total">$0</span></div>
               <textarea class="form-textarea cart-note" id="cart-note" placeholder="Catatan checkout (opsional)"></textarea>
               <div class="cart-status">Stok belum dipotong saat memasukkan barang ke keranjang. Stok baru dipotong ketika admin menyetujui <b>ACC Barang</b>. Jika transaksi ditolak, stok tetap.</div>
-              <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px" onclick="submitCartCheckout()">✅ Checkout Semua</button>
+              <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px" onclick="submitCartCheckout()">Checkout Semua</button>
             </div>
           </div>
         </div>
@@ -2870,6 +2932,7 @@ const fmt = n => state.currency + Number(n || 0).toLocaleString('id-ID');
 const isDeveloper = () => state.currentUser?.role === 'developer';
 const isAdmin = () => state.currentUser?.role === 'admin' || isDeveloper();
 const isMember = () => state.currentUser?.role === 'member';
+const canCheckout = () => isMember() || isAdmin();
 
 // ── Item khusus: RED MONEY & BLACK MONEY ──
 // Barang ini tidak pakai sistem harga jual/beli & tidak bisa di-order/checkout sama sekali.
@@ -3326,49 +3389,79 @@ function buildMonthlyRekap(type) {
   completed.forEach(o => {
     const d = new Date(o.createdAt);
     const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-    if (!map[key]) map[key] = { count: 0, revenue: 0, cost: 0, date: new Date(d.getFullYear(), d.getMonth(), 1) };
-    const p = products.find(x => x.id === o.productId);
+    if (!map[key]) map[key] = { count: 0, revenue: 0, cost: 0, qty: 0, date: new Date(d.getFullYear(), d.getMonth(), 1) };
+    const lines = Array.isArray(o.items) && o.items.length ? o.items : [{productId:o.productId, qty:o.qty, name:(products.find(p=>p.id===o.productId)||{}).name}];
     map[key].count++;
-    map[key].revenue += o.total;
-    map[key].cost += p ? p.buy * o.qty : 0;
+    map[key].revenue += Number(o.total || 0);
+    lines.forEach(it => { map[key].qty += Number(it.qty || 0); });
+    map[key].cost += lines.reduce((sum,it) => {
+      const p = products.find(x => x.id === it.productId);
+      return sum + (p ? Number(p.buy || 0) * Number(it.qty || 0) : 0);
+    }, 0);
   });
   return Object.keys(map).sort().map(key => {
     const m = map[key];
-    return {
-      key,
-      label: m.date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }),
-      count: m.count,
-      revenue: m.revenue,
-      cost: m.cost,
-      profit: m.revenue - m.cost,
-    };
+    return { key, label: m.date.toLocaleDateString('id-ID', { month:'long', year:'numeric' }), count:m.count, qty:m.qty, revenue:m.revenue, cost:m.cost, profit:m.revenue-m.cost };
   }).reverse();
+}
+
+function getCompletedLines(typeFilter) {
+  const result = [];
+  orders.filter(o => o.status === 'selesai' && (!typeFilter || getOrderType(o) === typeFilter)).forEach(o => {
+    const lines = Array.isArray(o.items) && o.items.length ? o.items : [{ productId:o.productId, qty:o.qty, name:(products.find(p=>p.id===o.productId)||{}).name, icon:(products.find(p=>p.id===o.productId)||{}).icon }];
+    lines.forEach(it => {
+      const p = products.find(x=>x.id===it.productId);
+      const qty = Number(it.qty || 0);
+      const revenue = o.items?.length ? Number(it.total != null ? it.total : (Number(it.hargaSatuan || p?.sell || 0) * qty)) : Number(o.total||0);
+      const cost = p ? Number(p.buy||0) * qty : 0;
+      result.push({order:o, product:p, name:it.name || p?.name || 'Produk tidak ditemukan', qty, revenue, cost, profit:revenue-cost});
+    });
+  });
+  return result;
 }
 
 function renderRekapBulanan() {
   const bizBody = document.getElementById('rekap-biz-tbody');
   const illegalBody = document.getElementById('rekap-illegal-tbody');
   if (!bizBody || !illegalBody) return;
+  const allCompleted = orders.filter(o => o.status === 'selesai');
+  const lines = getCompletedLines();
+  const totalRevenue = allCompleted.reduce((a,o)=>a+Number(o.total||0),0);
+  const totalCost = lines.reduce((a,x)=>a+x.cost,0);
+  const totalQty = lines.reduce((a,x)=>a+x.qty,0);
+  const totalProfit = totalRevenue-totalCost;
+  const el = id => document.getElementById(id);
+  if(el('rekap-total-revenue')) el('rekap-total-revenue').textContent=fmt(totalRevenue);
+  if(el('rekap-total-cost')) el('rekap-total-cost').textContent=fmt(totalCost);
+  if(el('rekap-total-profit')) { el('rekap-total-profit').textContent=(totalProfit<0?'-':'')+fmt(Math.abs(totalProfit)); el('rekap-total-profit').className=totalProfit<0?'profit-negative':''; }
+  if(el('rekap-total-orders')) el('rekap-total-orders').textContent=allCompleted.length;
+  if(el('rekap-total-items')) el('rekap-total-items').textContent=totalQty;
+  if(el('rekap-avg-order')) el('rekap-avg-order').textContent=fmt(allCompleted.length?totalRevenue/allCompleted.length:0);
+  if(el('rekap-detail-count')) el('rekap-detail-count').textContent=`${allCompleted.length} transaksi`;
+  if(el('rekap-product-count')) el('rekap-product-count').textContent=`${new Set(lines.map(x=>x.product?.id||x.name)).size} produk`;
+  if(el('rekap-period-label')) el('rekap-period-label').textContent=allCompleted.length?'Seluruh transaksi selesai':'Belum ada transaksi selesai';
 
-  const emptyRow = `<tr><td colspan="5"><div class="empty-state" style="padding:14px 4px"><p style="font-size:11px">Belum ada data transaksi selesai</p></div></td></tr>`;
+  const empty = colspan => `<tr><td colspan="${colspan}"><div class="empty-state" style="padding:18px 4px"><p style="font-size:10px">Belum ada data transaksi selesai</p></div></td></tr>`;
+  const productMap={};
+  lines.forEach(x=>{const k=x.product?.id||x.name;if(!productMap[k]) productMap[k]={name:x.name, type:getOrderType(x.order)==='illegal'?'Checkout':'Bisnis', qty:0,revenue:0,cost:0}; productMap[k].qty+=x.qty;productMap[k].revenue+=x.revenue;productMap[k].cost+=x.cost;});
+  const productRows=Object.values(productMap).sort((a,b)=>b.revenue-a.revenue);
+  const pt=document.getElementById('rekap-product-tbody');
+  if(pt) pt.innerHTML=productRows.length?productRows.map(x=>`<tr><td class="tx-name">${escapeHtml(x.name)}</td><td><span class="product-type">${x.type}</span></td><td>${x.qty}</td><td style="color:var(--accent-blue)">${fmt(x.revenue)}</td><td>${fmt(x.cost)}</td><td class="${x.revenue-x.cost>=0?'profit-positive':'profit-negative'}">${x.revenue-x.cost<0?'-':''}${fmt(Math.abs(x.revenue-x.cost))}</td></tr>`).join(''):empty(6);
 
-  const bizData = buildMonthlyRekap('biz');
-  bizBody.innerHTML = bizData.length ? bizData.map(r => `<tr>
-      <td style="text-transform:capitalize">${r.label}</td>
-      <td>${r.count}</td>
-      <td>${fmt(r.revenue)}</td>
-      <td>${fmt(r.cost)}</td>
-      <td style="color:${r.profit >= 0 ? 'var(--success)' : 'var(--danger)'}">${r.profit >= 0 ? '' : '-'}${fmt(Math.abs(r.profit))}</td>
-    </tr>`).join('') : emptyRow;
+  const monthly={};
+  allCompleted.forEach(o=>{const d=new Date(o.createdAt);const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!monthly[k]) monthly[k]={date:new Date(d.getFullYear(),d.getMonth(),1),orders:0,qty:0,revenue:0,cost:0};monthly[k].orders++;monthly[k].revenue+=Number(o.total||0);});
+  lines.forEach(x=>{const d=new Date(x.order.createdAt);const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(monthly[k]){monthly[k].qty+=x.qty;monthly[k].cost+=x.cost;}});
+  const mt=document.getElementById('rekap-monthly-tbody'); const months=Object.values(monthly).sort((a,b)=>b.date-a.date);
+  if(mt) mt.innerHTML=months.length?months.map(x=>{const p=x.revenue-x.cost;return `<tr><td style="text-transform:capitalize">${x.date.toLocaleDateString('id-ID',{month:'long',year:'numeric'})}</td><td>${x.orders}</td><td>${x.qty}</td><td style="color:var(--accent-blue)">${fmt(x.revenue)}</td><td>${fmt(x.cost)}</td><td class="${p>=0?'profit-positive':'profit-negative'}">${p<0?'-':''}${fmt(Math.abs(p))}</td></tr>`}).join(''):empty(6);
 
-  const illegalData = buildMonthlyRekap('illegal');
-  illegalBody.innerHTML = illegalData.length ? illegalData.map(r => `<tr>
-      <td style="text-transform:capitalize">${r.label}</td>
-      <td>${r.count}</td>
-      <td>${fmt(r.revenue)}</td>
-      <td>${fmt(r.cost)}</td>
-      <td style="color:${r.profit >= 0 ? 'var(--success)' : 'var(--danger)'}">${r.profit >= 0 ? '' : '-'}${fmt(Math.abs(r.profit))}</td>
-    </tr>`).join('') : emptyRow;
+  const dt=document.getElementById('rekap-detail-tbody');
+  const sorted=[...allCompleted].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  if(dt) dt.innerHTML=sorted.length?sorted.map(o=>{const ol=lines.filter(x=>x.order.id===o.id);const qty=ol.reduce((a,x)=>a+x.qty,0);const cost=ol.reduce((a,x)=>a+x.cost,0);const p=Number(o.total||0)-cost;const names=ol.map(x=>`${escapeHtml(x.name)} ×${x.qty}`).join('<br>');return `<tr><td style="white-space:nowrap">${new Date(o.createdAt).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}</td><td>#${String(o.id).padStart(4,'0')}</td><td>${memberTag(o.buyer,o.buyerUsername)}</td><td>${names}</td><td>${qty}</td><td style="color:var(--accent-blue)">${fmt(o.total)}</td><td>${fmt(cost)}</td><td class="${p>=0?'profit-positive':'profit-negative'}">${p<0?'-':''}${fmt(Math.abs(p))}</td></tr>`}).join(''):empty(8);
+
+  const bizData=buildMonthlyRekap('biz');
+  bizBody.innerHTML=bizData.length?bizData.map(r=>`<tr><td style="text-transform:capitalize">${r.label}</td><td>${r.count}</td><td>${fmt(r.revenue)}</td><td>${fmt(r.cost)}</td><td style="color:${r.profit>=0?'var(--success)':'var(--danger)'}">${r.profit<0?'-':''}${fmt(Math.abs(r.profit))}</td></tr>`).join(''):empty(5);
+  const illegalData=buildMonthlyRekap('illegal');
+  illegalBody.innerHTML=illegalData.length?illegalData.map(r=>`<tr><td style="text-transform:capitalize">${r.label}</td><td>${r.count}</td><td>${fmt(r.revenue)}</td><td>${fmt(r.cost)}</td><td style="color:${r.profit>=0?'var(--success)':'var(--danger)'}">${r.profit<0?'-':''}${fmt(Math.abs(r.profit))}</td></tr>`).join(''):empty(5);
 }
 
 function renderStatusList() {
@@ -3448,11 +3541,11 @@ function txBadge(status) {
 
 function orderTxBadge(s) {
   const map = {
-    pending: `<span class="tx-badge proc"><span class="dot"></span>⏳ PENDING</span>`,
-    acc_order: `<span class="tx-badge info"><span class="dot"></span>✅ ACC ORDER</span>`,
-    acc_barang: `<span class="tx-badge ok"><span class="dot"></span>📦 ACC BARANG</span>`,
-    selesai: `<span class="tx-badge neutral"><span class="dot"></span>🎯 SELESAI</span>`,
-    rejected: `<span class="tx-badge bad"><span class="dot"></span>❌ DITOLAK</span>`,
+    pending: `<span class="tx-badge proc"><span class="dot"></span>PENDING</span>`,
+    acc_order: `<span class="tx-badge info"><span class="dot"></span>ACC ORDER</span>`,
+    acc_barang: `<span class="tx-badge ok"><span class="dot"></span>ACC BARANG</span>`,
+    selesai: `<span class="tx-badge neutral"><span class="dot"></span>SELESAI</span>`,
+    rejected: `<span class="tx-badge bad"><span class="dot"></span>DITOLAK</span>`,
   };
   return map[s] || s;
 }
@@ -3618,23 +3711,23 @@ function renderBizTable() {
 // ════════════════════════════════════
 function filterOrderType(t, el) {
   state.orderTypeFilter = t;
-  document.querySelectorAll('#order-type-tabs .cat-tab').forEach(tab => tab.classList.remove('active'));
+  document.querySelectorAll('#order-type-tabs .workflow-tab').forEach(tab => tab.classList.remove('active'));
   el.classList.add('active');
   const kelompokTh = document.getElementById('order-kelompok-th');
   const title = document.getElementById('order-table-title');
   if (t === 'biz') {
     kelompokTh.style.display = '';
-    title.textContent = '🏪 Daftar Order Bisnis';
+    title.textContent = 'Daftar Order Bisnis';
   } else {
     kelompokTh.style.display = 'none';
-    title.textContent = '🔫 Daftar Order Checkout';
+    title.textContent = 'Daftar Order Checkout';
   }
   renderOrderTable();
 }
 
 function filterOrder(s, el) {
   state.orderFilter = s;
-  document.querySelectorAll('#page-order .cat-tabs:not(#order-type-tabs) .cat-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#order-status-tabs .order-status-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   renderOrderTable();
 }
@@ -3662,21 +3755,21 @@ function renderOrderTable() {
   if (isMember()) filtered = filtered.filter(o => o.buyerUsername === state.currentUser.username);
   const colspan = orderType === 'biz' ? 8 : 7;
   if (!filtered.length) {
-    tb.innerHTML = `<tr><td colspan="${colspan}"><div class="empty-state"><div class="empty-icon">📋</div><p>TIDAK ADA ORDER</p></div></td></tr>`;
+    tb.innerHTML = `<tr><td colspan="${colspan}"><div class="empty-state"><div class="empty-icon">--</div><p>TIDAK ADA ORDER</p></div></td></tr>`;
     return;
   }
   tb.innerHTML = filtered.map(o => {
     const prod = products.find(p => p.id === o.productId);
     const kelompokCell = orderType === 'biz'
-      ? `<td>${o.kelompok ? `<span style="font-family:var(--mono);font-size:11px;color:var(--accent-blue)">🏳️ ${o.kelompok} — Di Input Oleh ${o.buyer || '-'} — ${fmt(o.hargaSatuan != null ? o.hargaSatuan : (o.qty ? o.total / o.qty : o.total))}</span>` : '—'}</td>`
+      ? `<td>${o.kelompok ? `<span style="font-family:var(--mono);font-size:11px;color:var(--accent-blue)">${o.kelompok} — Di Input Oleh ${o.buyer || '-'} — ${fmt(o.hargaSatuan != null ? o.hargaSatuan : (o.qty ? o.total / o.qty : o.total))}</span>` : '—'}</td>`
       : '';
     return `<tr>
       <td><span style="font-family:var(--mono);font-size:10px;color:var(--muted)">#${String(o.id).padStart(4, '0')}</span></td>
       <td>${memberTag(o.buyer, o.buyerUsername)}</td>
       ${kelompokCell}
       <td>${o.items?.length
-        ? o.items.map(it => `<div style="margin-bottom:3px"><span style="font-size:11px">${it.icon || '📦'} ${escapeHtml(it.name || (products.find(p=>p.id===it.productId)?.name || '?'))}</span> <span style="color:var(--muted);font-size:10px">×${it.qty}</span></div>`).join('')
-        : (prod ? prod.icon + ' ' + prod.name : '?')}</td>
+        ? o.items.map(it => `<div style="margin-bottom:3px"><span style="font-size:11px">${escapeHtml(it.name || (products.find(p=>p.id===it.productId)?.name || '?'))}</span> <span style="color:var(--muted);font-size:10px">×${it.qty}</span></div>`).join('')
+        : (prod ? escapeHtml(prod.name) : '?')}</td>
       <td style="font-family:var(--mono)">${o.items?.length ? o.items.reduce((a,it)=>a+Number(it.qty||0),0) : o.qty}x</td>
       <td style="font-family:var(--mono);color:var(--accent-blue)">${fmt(o.total)}</td>
       <td>${orderTxBadge(o.status)}</td>
@@ -3688,14 +3781,14 @@ function renderOrderTable() {
 function orderActions(o) {
   let btns = '';
   if (o.status === 'pending') {
-    btns += `<button class="btn btn-sm btn-success" onclick="advanceOrder(${o.id},'acc_order')">✅ ACC</button>`;
-    btns += `<button class="btn btn-sm btn-danger" onclick="advanceOrder(${o.id},'rejected')">❌ Tolak</button>`;
+    btns += `<button class="btn btn-sm btn-success" onclick="advanceOrder(${o.id},'acc_order')">ACC Order</button>`;
+    btns += `<button class="btn btn-sm btn-danger" onclick="advanceOrder(${o.id},'rejected')">Tolak</button>`;
   } else if (o.status === 'acc_order') {
-    btns += `<button class="btn btn-sm btn-primary" onclick="advanceOrder(${o.id},'acc_barang')">📦 ACC Barang</button>`;
+    btns += `<button class="btn btn-sm btn-primary" onclick="advanceOrder(${o.id},'acc_barang')">ACC Barang</button>`;
   } else if (o.status === 'acc_barang') {
-    btns += `<button class="btn btn-sm btn-success" onclick="advanceOrder(${o.id},'selesai')">🎯 Selesai</button>`;
+    btns += `<button class="btn btn-sm btn-success" onclick="advanceOrder(${o.id},'selesai')">Selesai</button>`;
   }
-  if (o.status !== 'selesai') btns += `<button class="btn btn-sm btn-danger btn-icon" onclick="confirmDeleteOrder(${o.id})">🗑</button>`;
+  if (o.status !== 'selesai') btns += `<button class="btn btn-sm btn-danger btn-icon" onclick="confirmDeleteOrder(${o.id})">Hapus</button>`;
   return btns;
 }
 
@@ -3853,7 +3946,7 @@ async function persistCurrentCart() {
 }
 
 async function addToCart(pid, qty) {
-  if (!isMember()) { showToast('Keranjang checkout hanya untuk member.', 'error'); return; }
+  if (!canCheckout()) { showToast('Akun ini tidak memiliki akses checkout.', 'error'); return; }
   const p = products.find(x => x.id === pid);
   qty = parseInt(qty) || 1;
   if (!p || p.type !== 'illegal' || isMoneyItem(p)) return;
@@ -3905,7 +3998,7 @@ async function removeFromCart(pid) {
 }
 
 async function submitCartCheckout() {
-  if (!isMember()) { showToast('Hanya member yang dapat checkout.', 'error'); return; }
+  if (!canCheckout()) { showToast('Akun ini tidak memiliki akses checkout.', 'error'); return; }
   const username = state.currentUser.username;
   const cart = getCurrentCart();
   if (!cart.length) { showToast('Keranjang masih kosong.', 'error'); return; }
